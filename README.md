@@ -5,6 +5,7 @@ Test RESTApi application
 - Go 1.9.2
 - openssl
 - MySql server
+- Docker for tests
 
 # Features
 - REST Api
