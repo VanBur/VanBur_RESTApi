@@ -14,7 +14,7 @@ Test RESTApi application
 - Logger
 
 # Configurate
-In "src/config/config.go" file, where you can setup this application as you want.
+In "src/config/config.go" file. There you can setup this application as you want.
 
 # Tests
 Yes
