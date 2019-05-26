@@ -1,3 +1,10 @@
+/*
+	For testing database you can use docker container with MySql server
+It simple and usefull! :)
+
+link to Docker 				: https://www.docker.com/
+link to MySql Docker hub 	: https://hub.docker.com/_/mysql
+*/
 package mysqlmodule
 
 import (
@@ -7,24 +14,16 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"os"
 	"os/exec"
-	"rakuten/src/models"
-	Utils "rakuten/src/myutils"
+	"restapiserver/src/models"
+	Utils "restapiserver/src/myutils"
 	"strings"
 	"testing"
 	"time"
 )
 
-/*
-	For testing database you can use docker container with MySql server
-It simple and usefull! :)
-
-link to Docker 				: https://www.docker.com/
-link to MySql Docker hub 	: https://hub.docker.com/_/mysql
-*/
-
 const (
 	DOCKER_UTIL_NAME = "docker"     // Need for tests
-	DELAY_FOR_MYSQL  = 10           // In secs - time to up docker with database
+	DELAY_FOR_MYSQL  = 10           // In secs - time to up docker with database (can be changed if you has error 'unexpected EOF')
 	DUMP_URL         = "testbd.sql" // Address of sql-dump
 
 	// Commands for working with docker
@@ -99,29 +98,28 @@ func getEmulateTestBD(dump string) error {
 
 //initTestDockerWithTestDB is a function to init test database with docker container.
 // return error if something's going wrong
-func initTestDockerWithTestDB() error {
+func init() {
 	var err error
 	err = Utils.IsEverythingInstalled(DOCKER_UTIL_NAME)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	fmt.Println("Docker is OK")
 
 	err = dockerCmdExec(DOCKER_RUN)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	processAnim(DELAY_FOR_MYSQL)
 	db, err = ConnectToDataBase(test_cfg)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	fmt.Println("Docker with TestDB is up and connected")
 	err = getEmulateTestBD(DUMP_URL)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	return nil
 }
 
 // contentTestStruct is a structure for testing content operations
@@ -155,13 +153,9 @@ var testViewContentData = []viewContentTestStruct{
 }
 
 func TestContent(t *testing.T) {
-	err := initTestDockerWithTestDB()
-	if err != nil {
-		t.Error("Problem with test Docker. Error :", err)
-		return
-	}
 	defer dockerCmdExec(DOCKER_STOP)
 	defer db.Close()
+	var err error
 
 	// Add content tests
 	for _, testPair := range testContentData {
@@ -241,4 +235,8 @@ func TestContent(t *testing.T) {
 	if err == nil {
 		t.Error("Content", v, "wasn't deleted")
 	}
+}
+
+func teardown() {
+	fmt.Println("!!!")
 }

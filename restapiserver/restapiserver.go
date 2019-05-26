@@ -34,8 +34,8 @@ import (
 // Pointer to use database
 var db *sql.DB
 
-func main() {
-	// Preparing part of main function
+//init need to connect to database and update cache of Devices and ProtectionSystems
+func init() {
 	fmt.Print("Checking needed myutils...")
 	err := MyUtils.IsEverythingInstalled(Config.REQUIRED_UTILS...)
 	if err != nil {
@@ -49,7 +49,6 @@ func main() {
 		fmt.Print("ERROR\n")
 		logger.Log.Fatalf("Problem with database connect. Error:%s", err.Error())
 	}
-	defer db.Close()
 	fmt.Print("ON\n")
 
 	// Update devices and protection systems cache if needed
@@ -59,7 +58,10 @@ func main() {
 		logger.Log.Fatalf("'Update cache' - problem with database. Error:%s", err.Error())
 		panic(err)
 	}
+}
 
+func main() {
+	defer db.Close()
 	// Create some API listenners
 	router := httprouter.New()
 	router.GET("/content", getContent)
