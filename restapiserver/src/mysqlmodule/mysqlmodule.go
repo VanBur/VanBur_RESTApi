@@ -6,8 +6,8 @@ package mysqlmodule
 import (
 	"database/sql"
 	"fmt"
-	Models "rakuten/src/models"
-	Utils "rakuten/src/myutils"
+	Models "restapiserver/src/models"
+	Utils "restapiserver/src/myutils"
 	"strings"
 )
 

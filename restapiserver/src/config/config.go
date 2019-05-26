@@ -3,7 +3,7 @@
 */
 package config
 
-import Utils "rakuten/src/myutils"
+import Utils "restapiserver/src/myutils"
 
 //Version of application
 const VERSION = "1.0"

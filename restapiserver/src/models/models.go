@@ -5,7 +5,7 @@ package models
 
 import (
 	"errors"
-	"rakuten/src/aesmodule"
+	"restapiserver/src/aesmodule"
 )
 
 // Enum of types of data

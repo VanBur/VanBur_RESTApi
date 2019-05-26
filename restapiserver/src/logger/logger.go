@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
-	"rakuten/src/config"
+	"restapiserver/src/config"
 )
 
 var Log *log.Logger
