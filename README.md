@@ -71,4 +71,7 @@ Help output:
 6) curl -i -H "Content-Type: application/json" -X POST -d '{"content_id":1,"Device":"LG"}' http://localhost:5000/content/view
 
 # Tests
-Yes
+To run unit-tests you need to go to folder where you can find some 'XXX_test.go' file and run:
+```
+go test
+```
