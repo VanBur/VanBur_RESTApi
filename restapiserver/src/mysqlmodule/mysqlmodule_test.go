@@ -8,119 +8,15 @@ link to MySql Docker hub 	: https://hub.docker.com/_/mysql
 package mysqlmodule
 
 import (
-	"bufio"
-	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"os"
-	"os/exec"
-	"restapiserver/src/models"
-	Utils "restapiserver/src/myutils"
-	"strings"
 	"testing"
-	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+
+	"restapiserver/src/config"
+	"restapiserver/src/models"
+	"restapiserver/src/utils"
 )
-
-const (
-	DOCKER_UTIL_NAME = "docker"     // Need for tests
-	DELAY_FOR_MYSQL  = 10           // In secs - time to up docker with database (can be changed if you has error 'unexpected EOF')
-	DUMP_URL         = "testbd.sql" // Address of sql-dump
-
-	// Commands for working with docker
-	DOCKER_RUN = "run -d -p 9999:3306 --name=mysql-server --rm " +
-		"-e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=testDB " +
-		"--tmpfs /var/lib/mysql mysql:5.7.26"
-	DOCKER_STOP = "stop mysql-server"
-)
-
-// Database and configs
-var db *sql.DB
-var test_cfg = Utils.DbConfig{
-	"root",
-	"root",
-	"localhost",
-	9999,
-	"testDB",
-}
-
-// processAnim is design method to let user know that running database is in progress
-func processAnim(timer int) {
-	for i := 0; i < timer; i++ {
-		time.Sleep(1 * time.Second)
-		fmt.Print("* ")
-	}
-	fmt.Println(" Done.")
-}
-
-// dockerCmdExec is a function to execute docker commands.
-// return error if something's going wrong.
-func dockerCmdExec(command string) error {
-	args := strings.Split(command, " ")
-	err := exec.Command(DOCKER_UTIL_NAME, args...).Run()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// execSqlCmd is a function to execute sql commands.
-// return error if something's going wrong
-func execSqlCmd(cmd string) error {
-	_, err := db.Exec(cmd)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-//getEmulateTestBD is a function to read sql-dump and send commands to execute function.
-// return error if something's going wrong
-func getEmulateTestBD(dump string) error {
-	file, err := os.Open(dump)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		err = execSqlCmd(scanner.Text())
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-	return nil
-}
-
-//initTestDockerWithTestDB is a function to init test database with docker container.
-// return error if something's going wrong
-func init() {
-	var err error
-	err = Utils.IsEverythingInstalled(DOCKER_UTIL_NAME)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Docker is OK")
-
-	err = dockerCmdExec(DOCKER_RUN)
-	if err != nil {
-		panic(err)
-	}
-	processAnim(DELAY_FOR_MYSQL)
-	db, err = ConnectToDataBase(test_cfg)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Docker with TestDB is up and connected")
-	err = getEmulateTestBD(DUMP_URL)
-	if err != nil {
-		panic(err)
-	}
-}
 
 // contentTestStruct is a structure for testing content operations
 type contentTestStruct struct {
@@ -153,9 +49,30 @@ var testViewContentData = []viewContentTestStruct{
 }
 
 func TestContent(t *testing.T) {
-	defer dockerCmdExec(DOCKER_STOP)
+	err := utils.StartDockerDB()
+	if err != nil {
+		panic(err)
+	}
+	defer utils.StopDockerDB()
+
+	var dbConf = DbConfig{
+		User:   utils.DOCKER_DB_USER,
+		Pass:   utils.DOCKER_DB_PASS,
+		Host:   utils.DOCKER_DB_HOST,
+		Port:   utils.DOCKER_DB_PORT,
+		DBName: utils.DOCKER_DB_NAME}
+	db, err := ConnectToDataBase(dbConf)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("DB is online")
 	defer db.Close()
-	var err error
+
+	err = LoadDump(db, config.DUMP_PATH)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Dump was loaded")
 
 	// Add content tests
 	for _, testPair := range testContentData {
@@ -235,8 +152,4 @@ func TestContent(t *testing.T) {
 	if err == nil {
 		t.Error("Content", v, "wasn't deleted")
 	}
-}
-
-func teardown() {
-	fmt.Println("!!!")
 }

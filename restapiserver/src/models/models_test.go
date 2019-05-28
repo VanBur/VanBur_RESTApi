@@ -25,15 +25,15 @@ var isAvailableDeviceTests = []isAvailableTestStruct{
 }
 
 var isAvailableProtectSystemsTests = []isAvailableTestStruct{
-	{"AES + ECB", true},
+	{"AES 2", true},
 	{"AES + XYZ", false},
 	{"Widevine", false},
 }
 
 var isValidContentDataTests = []contentTestStruct{
-	{Content{1, "AES + ECB", "1234", "8765"}, true, true},
-	{Content{2, "AES + ECB", "", ""}, true, false},
-	{Content{3, "AES + CBC", "", ""}, false, true},
+	{Content{1, "AES 1", "1234", "8765"}, true, true},
+	{Content{2, "AES 1234", "", ""}, true, false},
+	{Content{3, "AES 2", "", ""}, false, true},
 	{Content{4, "", "xxxyyy", "43214321"}, false, true},
 	{Content{5, "", "", ""}, false, false},
 }

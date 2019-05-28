@@ -3,18 +3,29 @@
 */
 package config
 
-import Utils "restapiserver/src/myutils"
-
 //Version of application
-const VERSION = "1.0"
+const VERSION = "1.01"
 
 //Log file path
-const LOG_PATH = "logs/info.log"
+const LOG_FOLDER = "logs"
+const LOG_FILE_NAME = "info.log"
+
+// MySql dump path
+const DUMP_PATH = "testbd.sql"
 
 // Port for this application
 var API_PORT = 5000
 
 // Configuration of needed database
+const (
+	DB_HOST = "localhost"
+	DB_PORT = 8889
+	DB_USER = "root"
+	DB_PASS = "root"
+	DB_NAME = "rakuten"
+)
+
+/*
 var DB_CONFIG = Utils.DbConfig{
 	"root",
 	"root",
@@ -22,6 +33,7 @@ var DB_CONFIG = Utils.DbConfig{
 	8889,
 	"rakuten",
 }
+*/
 
 // Programms required to make this super application works
 var REQUIRED_UTILS = []string{
