@@ -2,7 +2,7 @@
 Test RESTApi application
 
 # Current version
-1.01
+1.02
 
 # REQUIREMENT
 - Go 1.9.2
@@ -15,6 +15,7 @@ Test RESTApi application
 - MySql module
 - Encryption module, based on 'openssl'
 - Logger
+- Demo-mode with full tables
 
 # Pre-build
 To install all needed external libs:
@@ -55,12 +56,149 @@ Help output:
         get current version.
 ```
 # Api usage
-1) GetContent      - GET     host_address:port/content
-2) GetContentById  - GET     host_address:port/content/<id>
-3) AddContent      - POST    host_address:port/content
-4) UpdateContent   - PUT     host_address:port/content/<id>
-5) DeleteContent   - DELETE  host_address:port/content/<id>
-6) CheckView       - POST    host_address:port/content/view
+1) GetContent (GET method) - endpoint to get all content from database.     
+Usage: 
+  host_address:port/content
+Return:
+  - HTTP 200 and all content data with params {id,protection_system_name,content_key,payload} if everything is good;
+  - HTTP 502 and error="database problem", if you have some problem with database.
+  
+Example:
+  Usage:  
+    curl -X GET "http://localhost:5000/content"
+  Return: 
+    [{"id":1,"protection_system_name":"AES 2", 
+      "content_key":"superpass", 
+      "payload":"U2FsdGVkX190cOearjAhFozvAQFjW53OUhLQGKfTVZnj8iOwveiaZ8rqAPNBjeDB"},
+    {"id":2,"protection_system_name":"AES 1", 
+      "content_key":"mypassword", 
+      "payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"},
+    {"id":3,"protection_system_name":"AES 1", 
+      "content_key":"mypassword", 
+      "payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}]
+      
+2) GetContentById (GET method) - endpoint to get content with selected ID (int).
+Usage:
+  host_address:port/content/<id>
+Return:
+  - HTTP 200 and selected content data with params {id,protection_system_name,content_key,payload} if everything is good;
+  - HTTP 400 and error="invalid content ID", if you input some non-int <id> (content id MUST be INT);
+  - HTTP 404 and error="no such content in database", if content with selected ID isn't in database;
+  - HTTP 502 and error="database problem", if you have some problem with database.
+  
+Example:
+  Usage:  
+    curl -X GET "http://localhost:5000/content/1"
+  Return: 
+    {"id":1,"protection_system_name":"AES 2", 
+      "content_key":"superpass", 
+      "payload":"U2FsdGVkX190cOearjAhFozvAQFjW53OUhLQGKfTVZnj8iOwveiaZ8rqAPNBjeDB"}
+  
+  Usage with error:
+    curl -i -X GET http://localhost:5000/content/xxx
+  Result error:
+    400 Bad Request
+    invalid content ID
+  
+3) AddContent (POST method) - endpoint to add new content.    
+Usage:
+  host_address:port/content
+JSON format:
+  '{"protection_system_name":<string>,
+    "content_key":<string>,
+    "payload":<string>}'
+  where:
+    protection_system_name - name of protection system in database (in demo ["AES 1","AES 2"]);
+    content_key - encryption key to decrypt encrypted <payload>;
+    payload - data, that was encrypted by symmetric <content_key>
+  Warning - every parameter MUST be in JSON structure.  
+
+Return:
+  - HTTP 200 if everything is good and new content was added;
+  - HTTP 400 and error="invalid json", if you input bad JSON struct (see JSON struct above);
+  - HTTP 400 and error="invalid content data", if you input not all of required content params (see WARNING above);
+  - HTTP 400 and error="no such protection system in database", if selected protection system name isn't in database;
+  - HTTP 400 and error="invalid payload", if you input bad data into JSON struct, that can't be decrypted (for example, if key isn't work with this encrypted data and aes-module get error);
+  - HTTP 502 and error="database problem", if you have some problem with database.
+  
+Example:
+  Usage:  
+    curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES 1", "content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}' http://localhost:5000/content
+  Return: 
+    200 OK
+    
+  Usage with error:
+    curl -i -H "Content-Type: application/json" -X POST -d '{"content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}' http://localhost:5000/content
+  Result error:
+    400 Bad Request
+    invalid content ID
+  Usage with error:
+    curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES BAD","content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}' http://localhost:5000/content
+  Result error:
+    400 Bad Request
+    no such protection system in database
+  
+4) UpdateContent (PUT method) - endpoint to update content with selected ID (int).  
+Usage:
+  host_address:port/content/<id>
+JSON format:
+  '{"protection_system_name":<string>,
+    "content_key":<string>,
+    "payload":<string>}'
+  where:
+    protection_system_name - name of protection system in database (in demo ["AES 1","AES 2"]);
+    content_key - encryption key to decrypt encrypted <payload>;
+    payload - data, that was encrypted by symmetric <content_key>
+  Warning - all parameter are optional, but some of them needed to be included into JSON structure. For example: if you put only <payload> parameter into JSON - you will get error because encrypted data without <content_key> and <protection_system_name> can't be decrypted. Otherhand, you can input <protection_system_name> and <content_key> to update old payload. Server logic will decrypt old payload with old params from database and, if payload was not damaged, encrypt with new params.
+
+Return:
+  - HTTP 200 if everything is good and content was successfully updated;
+  - HTTP 400 and error="invalid content ID", if you input some non-int <id> (content id MUST be INT);
+  - HTTP 400 and error="invalid json", if you input bad JSON struct (see JSON struct above);
+  - HTTP 400 and error="invalid content data", if you input not all of required content params (see WARNING above);
+  - HTTP 400 and error="no such protection system in database", if selected protection system name isn't in database;
+  - HTTP 404 and error="no such content in database", if content with selected ID isn't in database;
+  - HTTP 417 and error="invalid payload in database", if somehow we put bad data in database before (for example, if old content_key and payload can't be usable);
+  - HTTP 400 and error="invalid payload", if you input bad data into JSON struct, that can't be decrypted (for example, if key isn't work with this encrypted data and aes-module get error);
+  - HTTP 502 and error="database problem", if you have some problem with database.
+  
+Example:
+  Usage:  
+    curl -i -H "Content-Type: application/json" -X PUT -d '{"content_key":"TestKey123"}' http://localhost:5000/content/3
+    curl -i -H "Content-Type: application/json" -X PUT -d '{"content_key":"TestKey987","protection_system_name":"AES 2"}' http://localhost:5000/content/3
+    curl -i -H "Content-Type: application/json" -X PUT -d '{"content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}' http://localhost:5000/content/3
+    curl -i -H "Content-Type: application/json" -X PUT -d '{"protection_system_name":"AES 1","content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}' http://localhost:5000/content/3
+  Return: 
+    200 OK  
+  
+  Usage with error:
+    curl -i -H "Content-Type: application/json" -X PUT -d '{"content_key":"TestKey23","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}' http://localhost:5000/content/3
+  Result error:
+    400 Bad Request
+    invalid payload
+  Usage with error:
+    curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES BAD","content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}' http://localhost:5000/content
+  Result error:
+    400 Bad Request
+    no such protection system in database
+
+5) DeleteContent (DELETE method) - endpoint to delete content with selected ID (int).  
+Usage:
+  host_address:port/content/<id>
+Return:
+  - HTTP 200 if everything is good and content was successfully deleted;
+  - HTTP 400 and error="invalid content ID", if you input some non-int <id> (content id MUST be INT);
+  - HTTP 502 and error="database problem", if you have some problem with database.
+  
+Example:
+  Usage:  
+    curl -X DELETE "http://localhost:5000/content/1"
+  Result:
+    200 OK
+    
+6) CheckView (GET method) - endpoint to get decrypted payload data from content with selected ID (int) with selected device name (string). 
+Usage: 
+  host_address:port/view
 
 # Requests examples
 1) curl -X GET "http://localhost:5000/content"
