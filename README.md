@@ -224,8 +224,50 @@ Example:
 ```
 6) CheckView (GET method) - endpoint to get decrypted payload data from content with selected ID (int) with selected device name (string). 
 Usage: 
+```
   host_address:port/view
+```
+JSON format:
+```
+  '{"content_id":<int>,
+    "device":<string>}'
+```
+where:
+* content_id - id of selected content;
+* device - name of device (in demo ["Android","Samsung","iOS","LG"]).
+  Warning - every parameter MUST be in JSON structure.
 
+Return:
+```
+  - HTTP 200 and decrypted data of selected content if everything is good and user can get this data;
+  - HTTP 451 and error="content can't be shown", if selected device can't work with selected encrypted data(for example - if content was encrypted by AES-CBC and device can work with AES-ECB)
+  - HTTP 400 and error="invalid json", if you input bad JSON struct (see JSON struct above);
+  - HTTP 400 and error="invalid view content data", if you input not all of required view content params (see WARNING above);
+  - HTTP 400 and error="no such device in database", if selected device name isn't in database;
+  - HTTP 400 and error="no such protection system in encryption module", if protection system of selected device can't be decrypet with current encryption module  (for example, if we somehow add some new device with protection scheme,that absense in current version of encryption module);
+  - HTTP 417 and error="invalid payload in database", if somehow we put bad data in database before (for example, if somehow someone put content_key and payload in database, that can't be usable);
+  - HTTP 502 and error="database problem", if you have some problem with database.
+```
+Example:
+```
+  Usage:  
+    curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"iOS"}' http://localhost:5000/view
+  Return: 
+    200 OK
+    "precious-content"
+____________________________________________________________________________________
+  Usage with error:
+    curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"OS"}' http://localhost:5000/view
+  Return: 
+    400 Bad Request
+    no such device in database
+____________________________________________________________________________________
+  Usage with error:
+     curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"LG"}' http://localhost:5000/view
+  Return: 
+    451 Unavailable For Legal Reasons
+    content can't be shown
+```
 # Requests examples
 1) curl -X GET "http://localhost:5000/content"
 2) curl -X GET "http://localhost:5000/content/12"
