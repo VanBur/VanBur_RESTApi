@@ -88,7 +88,7 @@ func main() {
 		}
 		defer db.Close()
 
-		err = MySqlModule.LoadDump(db, "src/mysqlmodule/"+config.DUMP_PATH)
+		err = MySqlModule.LoadDump(db, "src/mysqlmodule/"+config.DUMP_WITH_CONTENT_PATH)
 		if err != nil {
 			fmt.Println("ERROR")
 			fmt.Printf("Problem with database dump. Error:%s", err.Error())
@@ -124,7 +124,7 @@ func main() {
 //updateCacheData is a function for update application cached 'devices' and 'protection systems' data if needed
 // return error if was some database error
 func updateCacheData(db *sql.DB) error {
-	protSys, err := MySqlModule.GetDataNames(db, Models.PROTECTION_SYSTEMS_TYPE)
+	protSys, err := MySqlModule.GetProtectionSystems(db)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func updateCacheData(db *sql.DB) error {
 		fmt.Println("Protection Systems was updated")
 	}
 
-	dev, err := MySqlModule.GetDataNames(db, Models.DEVICES_TYPE)
+	dev, err := MySqlModule.GetDevices(db)
 	if err != nil {
 		return err
 	}

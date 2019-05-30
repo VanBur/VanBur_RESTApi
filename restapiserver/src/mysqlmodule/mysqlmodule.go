@@ -23,31 +23,34 @@ type DbConfig struct {
 	DBName string
 }
 
-const DATABASE_PING_COUNT = 4
-const DATABASE_PING_SLEEP = 5
+// params for connecting to database
+const (
+	_DATABASE_PING_COUNT = 4
+	_DATABASE_PING_SLEEP = 5
+)
 
 // MySql commands
 const (
-	GET_CONTENT_MYSQL = "SELECT content.id, protection_systems.name AS protection_system_name " +
+	_GET_CONTENT_MYSQL = "SELECT content.id, protection_systems.name AS protection_system_name " +
 		", content.content_key, content.payload " +
 		"FROM content,protection_systems " +
 		"WHERE content.protection_system_id = protection_systems.id"
-	GET_CONTENT_BY_ID_MYSQL = "SELECT content.id, protection_systems.name AS protection_system_name " +
+	_GET_CONTENT_BY_ID_MYSQL = "SELECT content.id, protection_systems.name AS protection_system_name " +
 		", content.content_key, content.payload " +
 		"FROM content,protection_systems " +
 		"WHERE content.protection_system_id = protection_systems.id AND content.id = ?"
-	ADD_CONTENT_MYSQL = "INSERT INTO content (protection_system_id, content_key, payload) " +
+	_ADD_CONTENT_MYSQL = "INSERT INTO content (protection_system_id, content_key, payload) " +
 		"VALUES( (SELECT id FROM protection_systems WHERE name = ?), ?, ?)"
-	DELETE_CONTENT_MYSQL = "DELETE FROM content WHERE id = ?"
+	_DELETE_CONTENT_MYSQL = "DELETE FROM content WHERE id = ?"
 
-	VIEW_CONTENT_MYSQL = "SELECT p.encryption_mode, c.content_key, c.payload " +
+	_VIEW_CONTENT_MYSQL = "SELECT p.encryption_mode, c.content_key, c.payload " +
 		"FROM protection_systems p " +
 		"INNER JOIN content c ON p.id = c.protection_system_id " +
-		"INNER JOIN devices d ON c.protection_system_id  = d.protection_system_id " +
+		"INNER JOIN devices d ON c.protection_system_id = d.protection_system_id " +
 		"WHERE c.id = ? AND d.name = ?"
 
-	GET_PROTECTION_SYSTEM_NAMES = "SELECT name FROM protection_systems"
-	GET_DEVICE_NAMES            = "SELECT name FROM devices"
+	_GET_PROTECTION_SYSTEMS = "SELECT * FROM protection_systems"
+	_GET_DEVICES            = "SELECT * FROM devices"
 )
 
 //ConnectToDataBase is a function to connect application to database and make sure that db is connected by ping.
@@ -58,10 +61,10 @@ func ConnectToDataBase(cnf DbConfig) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	for i := 0; i < DATABASE_PING_COUNT; i++ {
-		err := PingToDatabase(db)
+	for i := 0; i < _DATABASE_PING_COUNT; i++ {
+		err := pingToDatabase(db)
 		if err != nil {
-			time.Sleep(DATABASE_PING_SLEEP * time.Second)
+			time.Sleep(_DATABASE_PING_SLEEP * time.Second)
 		} else {
 			break
 		}
@@ -69,7 +72,9 @@ func ConnectToDataBase(cnf DbConfig) (*sql.DB, error) {
 	return db, nil
 }
 
-func PingToDatabase(db *sql.DB) error {
+//pingToDatabase is a function to ping database for checking connect
+// return error if ping was failed
+func pingToDatabase(db *sql.DB) error {
 	err := db.Ping()
 	if err != nil {
 		return err
@@ -80,53 +85,73 @@ func PingToDatabase(db *sql.DB) error {
 //GetContent is a function to get list of all content from database
 // return pointer to slice of content and error if something's going wrong.
 func GetContent(db *sql.DB) ([]*models.Content, error) {
-	rows, err := db.Query(GET_CONTENT_MYSQL)
+	rows, err := db.Query(_GET_CONTENT_MYSQL)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	allContent := make([]*models.Content, 0)
+	result := make([]*models.Content, 0)
 	for rows.Next() {
 		content := new(models.Content)
 		err := rows.Scan(&content.ID, &content.ProtectionSystemName, &content.ContentKey, &content.Payload)
 		if err != nil {
 			return nil, err
-			//log.Fatal(err)
 		}
-		allContent = append(allContent, content)
+		result = append(result, content)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	return allContent, nil
+	return result, nil
 }
 
-//GetDataNames is a function to get list of all names of selected data from database.
-// Needs to validate cashed slices of data like 'Devices' or 'Protection systems'
-// return pointer to slice of selected data names and error if something's going wrong.
-func GetDataNames(db *sql.DB, dataType int) ([]string, error) {
-	var sql string
-	switch dataType {
-	case models.PROTECTION_SYSTEMS_TYPE:
-		sql = GET_PROTECTION_SYSTEM_NAMES
-	case models.DEVICES_TYPE:
-		sql = GET_DEVICE_NAMES
-	}
-	rows, err := db.Query(sql)
+//GetDevices is a function to get list of all devices data from database.
+// Needs to validate cashed 'Devices' slice
+// return pointer to slice of structs and error if something's going wrong.
+func GetDevices(db *sql.DB) ([]models.Device, error) {
+	rows, err := db.Query(_GET_DEVICES)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	result := make([]string, 0)
+	result := make([]models.Device, 0)
 	for rows.Next() {
-		var name string
-		err = rows.Scan(&name)
+		device := new(models.Device)
+		err := rows.Scan(&device.ID, &device.Name, &device.ProtectionSystemId)
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, name)
+		result = append(result, *device)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+//GetProtectionSystems is a function to get list of all protection systems data from database.
+// Needs to validate cashed 'Protection Systems' slice
+// return pointer to slice of structs and error if something's going wrong.
+func GetProtectionSystems(db *sql.DB) ([]models.ProtectionSystem, error) {
+	rows, err := db.Query(_GET_PROTECTION_SYSTEMS)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]models.ProtectionSystem, 0)
+	for rows.Next() {
+		ps := new(models.ProtectionSystem)
+		err := rows.Scan(&ps.ID, &ps.Name, &ps.EncryptionMode)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, *ps)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 	return result, nil
 }
@@ -134,12 +159,10 @@ func GetDataNames(db *sql.DB, dataType int) ([]string, error) {
 //GetContentById is a function to get content data with selected id from database.
 // return pointer to selected content data and error if something's going wrong.
 func GetContentById(db *sql.DB, contentId int) (*models.Content, error) {
-	row := db.QueryRow(GET_CONTENT_BY_ID_MYSQL, contentId)
+	row := db.QueryRow(_GET_CONTENT_BY_ID_MYSQL, contentId)
 	content := new(models.Content)
 	err := row.Scan(&content.ID, &content.ProtectionSystemName, &content.ContentKey, &content.Payload)
-	if err == sql.ErrNoRows {
-		return nil, err
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 	return content, nil
@@ -148,7 +171,7 @@ func GetContentById(db *sql.DB, contentId int) (*models.Content, error) {
 //AddContent is a function to add content data to database.
 // return error if something's going wrong.
 func AddContent(db *sql.DB, params models.Content) error {
-	sql := ADD_CONTENT_MYSQL
+	sql := _ADD_CONTENT_MYSQL
 	_, err := prepareAndExec(db, sql, params.ProtectionSystemName, params.ContentKey, params.Payload)
 	if err != nil {
 		return err
@@ -170,7 +193,7 @@ func UpdateContent(db *sql.DB, contentId int, params models.Content) error {
 //DeleteContent is a function to delete content data with selected id from database.
 // return error if something's going wrong.
 func DeleteContent(db *sql.DB, contentId int) error {
-	sql := DELETE_CONTENT_MYSQL
+	sql := _DELETE_CONTENT_MYSQL
 	_, err := prepareAndExec(db, sql, contentId)
 	if err != nil {
 		return err
@@ -181,12 +204,10 @@ func DeleteContent(db *sql.DB, contentId int) error {
 //GetEncryptedMedia is a function to get enrypted data with keys from database.
 // return pointer to selected enrypted data and error if something's going wrong.
 func GetEncryptedMedia(db *sql.DB, params models.ViewContent) (*models.EnryptedMedia, error) {
-	row := db.QueryRow(VIEW_CONTENT_MYSQL, params.ContentID, params.Device)
+	row := db.QueryRow(_VIEW_CONTENT_MYSQL, params.ContentID, params.Device)
 	data := new(models.EnryptedMedia)
 	err := row.Scan(&data.EncryptionMode, &data.ContentKey, &data.Payload)
-	if err == sql.ErrNoRows {
-		return nil, err
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 	return data, nil
@@ -202,7 +223,6 @@ func LoadDump(db *sql.DB, dump string) error {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		//err = execSqlCmd(db, scanner.Text())
 		_, err = prepareAndExec(db, scanner.Text())
 		if err != nil {
 			return err

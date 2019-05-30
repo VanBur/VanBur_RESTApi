@@ -74,6 +74,25 @@ func TestContent(t *testing.T) {
 	}
 	fmt.Println("Dump was loaded")
 
+	// Get protection systems
+	ps, _ := GetProtectionSystems(db)
+	if len(ps) != len(models.PROTECTION_SCHEMES) {
+		t.Error(
+			"Expected total number of content =", len(models.PROTECTION_SCHEMES),
+			"got", len(ps),
+		)
+	}
+
+	// Get devices
+
+	devices, _ := GetDevices(db)
+	if len(devices) != len(models.DEVICES) {
+		t.Error(
+			"Expected total number of content =", len(models.DEVICES),
+			"got", len(devices),
+		)
+	}
+
 	// Add content tests
 	for _, testPair := range testContentData {
 		e := AddContent(db, testPair.contentData)

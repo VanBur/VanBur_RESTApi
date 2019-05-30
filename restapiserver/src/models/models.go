@@ -3,30 +3,18 @@
 */
 package models
 
-import (
-	"errors"
-	"restapiserver/src/aesmodule"
-)
-
-// Enum of types of data
-const (
-	PROTECTION_SYSTEMS_TYPE = iota
-	DEVICES_TYPE
-	CONTENT
-)
-
 // List of protection systems for cashe
-var PROTECTION_SCHEMES = []string{
-	"AES 1",
-	"AES 2",
+var PROTECTION_SCHEMES = []ProtectionSystem{
+	{1, "AES 1", "AES + ECB"},
+	{2, "AES 2", "AES + CBC"},
 }
 
 // List of devices for cashe
-var DEVICES = []string{
-	"Android",
-	"Samsung",
-	"iOS",
-	"LG",
+var DEVICES = []Device{
+	{1, "Android", 1},
+	{2, "Samsung", 2},
+	{3, "iOS", 1},
+	{4, "LG", 2},
 }
 
 // Like a dict for connect openssl-aes-module with application
@@ -52,9 +40,9 @@ type ProtectionSystem struct {
 
 // Device structure to parse data from database
 type Device struct {
-	ID                   int    `json:"id"`
-	Name                 string `json:"name"`
-	ProtectionSystemName int    `json:"protection_system_name"`
+	ID                 int    `json:"id"`
+	Name               string `json:"name"`
+	ProtectionSystemId int    `json:"protection_system_id"`
 }
 
 // ViewContent structure to parse data from database
@@ -73,15 +61,12 @@ type EnryptedMedia struct {
 //IsValidContentData is a validator for content data
 //return 'true' if content data is valid
 func IsValidContentData(data Content, needAllParams bool) bool {
+	// if no data
 	if data.ContentKey == "" && data.Payload == "" && data.ProtectionSystemName == "" {
 		return false
 	}
-	if needAllParams {
-		if data.ContentKey == "" || data.Payload == "" || data.ProtectionSystemName == "" {
-			return false
-		}
-	}
-	if data.ProtectionSystemName != "" && IsProtectionSchemeAvalable(data.ProtectionSystemName) == false {
+	// if all params is required but something is gone
+	if needAllParams && (data.ContentKey == "" || data.Payload == "" || data.ProtectionSystemName == "") {
 		return false
 	}
 	return true
@@ -93,44 +78,32 @@ func IsValidViewContentData(data ViewContent) bool {
 	if data.ContentID <= 0 || data.Device == "" {
 		return false
 	}
-	if IsDeviceAvailable(data.Device) == false {
+	if GetDeviceByName(data.Device) == nil {
 		return false
 	}
 	return true
 }
 
-//IsProtectionSchemeAvalable is a function that checking if selected protection system is valid
-//return 'true' if selected protection system is in our database
-func IsProtectionSchemeAvalable(inputType string) bool {
-	for _, name := range PROTECTION_SCHEMES {
-		if name == inputType {
-			return true
+//GetProtectionSchemeByName is a function for getting selected protection system data by name
+// return pointer to a ProtSys if selected protection system is in our database
+// and return nil if selected ProtSys is absence
+func GetProtectionSchemeByName(inputType string) *ProtectionSystem {
+	for _, ps := range PROTECTION_SCHEMES {
+		if ps.Name == inputType {
+			return &ps
 		}
 	}
-	return false
+	return nil
 }
 
-//IsDeviceAvailable is a function that checking if selected device is valid.
-//return 'true' if selected device is in our database
-func IsDeviceAvailable(inputType string) bool {
-	for _, name := range DEVICES {
-		if name == inputType {
-			return true
+//GetDeviceByName is a function for getting selected device data by name
+// return pointer to a Device if selected device is in our database
+// and return nil if selected Device is absence
+func GetDeviceByName(inputType string) *Device {
+	for _, dev := range DEVICES {
+		if dev.Name == inputType {
+			return &dev
 		}
 	}
-	return false
-}
-
-//ConvertDatabaseEncTypeToAesModule is a function to get understandable format for openssl-aes-module.
-// return string with needed type of AES-encryption or error if openssl-aes-module cant working with this type
-// of encryption
-func ConvertDatabaseEncTypeToAesModule(inputType string) (string, error) {
-	switch inputType {
-	case AES_ECB:
-		return aesmodule.TYPE_128_ECB, nil
-	case AES_CBC:
-		return aesmodule.TYPE_128_CBC, nil
-	default:
-		return "", errors.New("Selected AES encryption type is unavalable")
-	}
+	return nil
 }

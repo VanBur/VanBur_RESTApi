@@ -8,9 +8,14 @@ type contentTestStruct struct {
 	result        bool
 }
 
-type isAvailableTestStruct struct {
+type isAvailableDevStruct struct {
 	name   string
-	result bool
+	result *Device
+}
+
+type isAvailablePSStruct struct {
+	name   string
+	result *ProtectionSystem
 }
 
 type viewContentTestStruct struct {
@@ -18,16 +23,19 @@ type viewContentTestStruct struct {
 	result          bool
 }
 
-var isAvailableDeviceTests = []isAvailableTestStruct{
-	{"iOS", true},
-	{"Sony", false},
-	{",Yhs;__", false},
+var isAvailableDeviceTests = []isAvailableDevStruct{
+	{"Android", &Device{1, "Android", 1}},
+	{"Samsung", &Device{2, "Samsung", 2}},
+	{"iOS", &Device{3, "iOS", 1}},
+	{"Sony", nil},
+	{",Yhs;__", nil},
 }
 
-var isAvailableProtectSystemsTests = []isAvailableTestStruct{
-	{"AES 2", true},
-	{"AES + XYZ", false},
-	{"Widevine", false},
+var isAvailableProtectSystemsTests = []isAvailablePSStruct{
+	{"AES 1", &ProtectionSystem{1, "AES 1", "AES + ECB"}},
+	{"AES 2", &ProtectionSystem{2, "AES 2", "AES + CBC"}},
+	{"AES + XYZ", nil},
+	{"Widevine", nil},
 }
 
 var isValidContentDataTests = []contentTestStruct{
@@ -47,8 +55,15 @@ var isValidContentViewDataTests = []viewContentTestStruct{
 
 func TestIsDeviceAvailable(t *testing.T) {
 	for _, testPair := range isAvailableDeviceTests {
-		v := IsDeviceAvailable(testPair.name)
-		if v != testPair.result {
+		v := GetDeviceByName(testPair.name)
+		if v != nil && testPair.result == nil {
+			t.Error(
+				"For data", testPair.result,
+				"expected", testPair.result,
+				"got", v,
+			)
+		}
+		if testPair.result != nil && (testPair.result.ID != v.ID || testPair.result.ProtectionSystemId != v.ProtectionSystemId || testPair.result.Name != v.Name) {
 			t.Error(
 				"For data", testPair.result,
 				"expected", testPair.result,
@@ -60,10 +75,17 @@ func TestIsDeviceAvailable(t *testing.T) {
 
 func TestIsProtectionSchemeAvalable(t *testing.T) {
 	for _, testPair := range isAvailableProtectSystemsTests {
-		v := IsProtectionSchemeAvalable(testPair.name)
-		if v != testPair.result {
+		v := GetProtectionSchemeByName(testPair.name)
+		if v != nil && testPair.result == nil {
 			t.Error(
-				"For data", testPair.name,
+				"For data", testPair.result,
+				"expected", testPair.result,
+				"got", v,
+			)
+		}
+		if testPair.result != nil && (testPair.result.ID != v.ID || testPair.result.EncryptionMode != v.EncryptionMode || testPair.result.Name != v.Name) {
+			t.Error(
+				"For data", testPair.result,
 				"expected", testPair.result,
 				"got", v,
 			)

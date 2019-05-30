@@ -10,6 +10,7 @@ package aesmodule
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"os/exec"
 	"strings"
@@ -25,9 +26,11 @@ const (
 	TYPE_256_ECB = "aes-256-ecb"
 )
 
+const ERROR_BAD_DECRYPT = "aesmodule : bad decrypt"
+
 //Encrypter is a function that generate encrypted string from simple string + enryption key
 // 'encType' is a parameter of some AES - modes
-func Encrypter(key, data, encType string) string {
+func Encrypter(key, data, encType string) (string, error) {
 	c1 := exec.Command("echo", data)
 	c2 := exec.Command("openssl", encType, "-a", "-salt", "-k", key)
 	return pipingExec(c1, c2)
@@ -35,21 +38,22 @@ func Encrypter(key, data, encType string) string {
 
 //Encrypter is a function that generate decrypted string from encrypted with enryption key
 // 'encType' is a parameter of some AES - modes
-func Decrypter(key, data, encType string) string {
+func Decrypter(key, data, encType string) (string, error) {
 	c1 := exec.Command("echo", data)
-	//c2 := exec.Command("openssl", "aes-128-cbc", "-a", "-d", "-salt", "-k", key)
 	c2 := exec.Command("openssl", encType, "-a", "-d", "-salt", "-k", key)
 	return pipingExec(c1, c2)
 }
 
 //pipingExec is a function that make piping nice and easy + anti-duplication code
-func pipingExec(c1, c2 *exec.Cmd) string {
+func pipingExec(c1, c2 *exec.Cmd) (string, error) {
 	r, w := io.Pipe()
 	c1.Stdout = w
 	c2.Stdin = r
 
-	var b2 bytes.Buffer
-	c2.Stdout = &b2
+	var b2o bytes.Buffer
+	var b2e bytes.Buffer
+	c2.Stdout = &b2o
+	c2.Stderr = &b2e
 
 	c1.Start()
 	c2.Start()
@@ -57,5 +61,9 @@ func pipingExec(c1, c2 *exec.Cmd) string {
 	w.Close()
 	c2.Wait()
 
-	return strings.Replace(b2.String(), "\n", "", 1)
+	if len(b2e.String()) != 0 {
+		return "", errors.New(ERROR_BAD_DECRYPT)
+	}
+
+	return strings.Replace(b2o.String(), "\n", "", 1), nil
 }

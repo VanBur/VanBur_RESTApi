@@ -28,7 +28,7 @@ const (
 	_DOCKER_CONT_BASE = "mysql:5.7.26"
 
 	// Time for docker to setup mysql server (in seconds)
-	_DOCKER_UPTIME = 12
+	_DOCKER_UPTIME = 10
 )
 
 //StartDockerDB is a method to start docker container with mysql database
