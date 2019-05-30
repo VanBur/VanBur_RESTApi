@@ -63,10 +63,10 @@ Return:
   - HTTP 200 and all content data with params {id,protection_system_name,content_key,payload} if everything is good;
   - HTTP 502 and error="database problem", if you have some problem with database.
   
-Example:
-  Usage:  
-    curl -X GET "http://localhost:5000/content"
-  Return: 
++Example:+
+Usage:  
+  curl -X GET "http://localhost:5000/content"
+Return: 
     [{"id":1,"protection_system_name":"AES 2", 
       "content_key":"superpass", 
       "payload":"U2FsdGVkX190cOearjAhFozvAQFjW53OUhLQGKfTVZnj8iOwveiaZ8rqAPNBjeDB"},
@@ -86,7 +86,7 @@ Return:
   - HTTP 404 and error="no such content in database", if content with selected ID isn't in database;
   - HTTP 502 and error="database problem", if you have some problem with database.
   
-Example:
++Example:+
   Usage:  
     curl -X GET "http://localhost:5000/content/1"
   Return: 
@@ -121,7 +121,7 @@ Return:
   - HTTP 400 and error="invalid payload", if you input bad data into JSON struct, that can't be decrypted (for example, if key isn't work with this encrypted data and aes-module get error);
   - HTTP 502 and error="database problem", if you have some problem with database.
   
-Example:
++Example:+
   Usage:  
     curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES 1", "content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}' http://localhost:5000/content
   Return: 
@@ -162,7 +162,7 @@ Return:
   - HTTP 400 and error="invalid payload", if you input bad data into JSON struct, that can't be decrypted (for example, if key isn't work with this encrypted data and aes-module get error);
   - HTTP 502 and error="database problem", if you have some problem with database.
   
-Example:
++Example:+
   Usage:  
     curl -i -H "Content-Type: application/json" -X PUT -d '{"content_key":"TestKey123"}' http://localhost:5000/content/3
     curl -i -H "Content-Type: application/json" -X PUT -d '{"content_key":"TestKey987","protection_system_name":"AES 2"}' http://localhost:5000/content/3
@@ -190,7 +190,7 @@ Return:
   - HTTP 400 and error="invalid content ID", if you input some non-int <id> (content id MUST be INT);
   - HTTP 502 and error="database problem", if you have some problem with database.
   
-Example:
++Example:+
   Usage:  
     curl -X DELETE "http://localhost:5000/content/1"
   Result:
