@@ -269,11 +269,17 @@ func ViewContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	isValid := models.IsValidViewContentData(viewContentParams)
-	if !isValid {
+	if models.IsValidViewContentData(viewContentParams) == false {
 		utils.Log.Printf("restapi : View content : ip=%s : http status=%d : Error=%s", r.Host, http.StatusBadRequest, utils.INVALID_VIEW_CONTENT_DATA)
 		utils.Log.Println("- error info:", err)
 		http.Error(w, utils.INVALID_VIEW_CONTENT_DATA, http.StatusBadRequest)
+		return
+	}
+
+	if models.GetDeviceByName(viewContentParams.Device) == nil {
+		utils.Log.Printf("restapi : View content : ip=%s : http status=%d : Error=%s", r.Host, http.StatusBadRequest, utils.NO_SUCH_DEVICE_IN_DATABASE)
+		utils.Log.Println("- error info:", err)
+		http.Error(w, utils.NO_SUCH_DEVICE_IN_DATABASE, http.StatusBadRequest)
 		return
 	}
 

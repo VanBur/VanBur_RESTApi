@@ -12,6 +12,7 @@ const (
 	INVALID_PAYLOAD_IN_DATABASE                    = "invalid payload in database"
 	NO_SUCH_CONTENT_IN_DATABASE                    = "no such content in database"
 	CONTENT_CANT_BE_SHOWN                          = "content can't be shown"
+	NO_SUCH_DEVICE_IN_DATABASE                     = "no such device in database"
 	NO_SUCH_PROTECTION_SYSTEM_IN_DATABASE          = "no such protection system in database"
 	NO_SUCH_PROTECTION_SYSTEM_IN_ENCRYPTION_MODULE = "no such protection system in encryption module"
 	DATABASE_PROBLEM                               = "database problem"

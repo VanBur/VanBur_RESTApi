@@ -78,9 +78,6 @@ func IsValidViewContentData(data ViewContent) bool {
 	if data.ContentID <= 0 || data.Device == "" {
 		return false
 	}
-	if GetDeviceByName(data.Device) == nil {
-		return false
-	}
 	return true
 }
 
