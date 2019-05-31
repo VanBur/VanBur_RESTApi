@@ -59,7 +59,9 @@ Help output:
 1) Protection systems
 
 id   |name    |encryption_mode
+
 1    |AES 1   |AES + ECB
+
 2    |AES 2   |AES + CBC
 
 Was taken from exercise.
@@ -67,9 +69,13 @@ Was taken from exercise.
 2) Devices
 
 id  |name      |protection_system_id
+
 1   |Android   |1
+
 2   |Samsung   |2
+
 3   |iOS       |1
+
 4   |LG        |2
 
 Was taken from exercise.
