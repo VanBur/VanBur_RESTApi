@@ -551,5 +551,9 @@ go test
 
 # PS
 Application is working now with ALREADY ENCRYPTED data, but it's easy to working with "clean" data. Also, application working with ENCRYPTED STRINGS (was selected as most basic data for show that idea of encryption is working), but can be upgraded to working with different binary data.
+
 Application was decomposet to modules (Database, Encryption, RESTApi, logger, config/error-file and others) to be more flexible in modernisation.
+
 I can make some mistakes with HTTP-codes, but i think that my variant is not so bad)
+
+THANKS FOR ATTENTION!
