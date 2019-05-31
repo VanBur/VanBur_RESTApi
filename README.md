@@ -271,23 +271,29 @@ ________________________________________________________________________________
 # Easy demo
 Here you can step-by-step try API functionality. Just copy and paste commands into terminal:
 1) Build and run api-server in DEMO mode:
-- go get ./...
-- go build restapiserver.go
-- ./restapiserver -demo
+```
+go get ./...
+go build restapiserver.go
+./restapiserver -demo
+```
 You need to little wait when docker with MySQL database will up. It's about 10 sec. After this you will see messages:
 ```
 Checking needed utils...ON
 Connecting to DataBase.............ON
 ```
 2) Let's see what content we have in database:
-- curl -X GET "http://localhost:5000/content"
+```
+curl -X GET "http://localhost:5000/content"
+```
 You will see list of all content in database:
 ```
 [{"id":2,"protection_system_name":"AES 1","content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"},{"id":1,"protection_system_name":"AES 2","content_key":"superpass","payload":"U2FsdGVkX190cOearjAhFozvAQFjW53OUhLQGKfTVZnj8iOwveiaZ8rqAPNBjeDB"},{"id":3,"protection_system_name":"AES 2","content_key":"badpass","payload":"U2FsdGVkX1+lxfJ2qOz/uA7NTprwWXhaMaQLNHPBsyNB+R1lyhPRCyUq13VvkRDp"}]
 ```
 First and second - good data, but last one - damaged.
 3) Let's add some content data:
-- curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES 4","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}' http://localhost:5000/content
+```
+curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES 4","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}' http://localhost:5000/content
+```
 We get:
 ```
 HTTP/1.1 400 Bad Request
@@ -299,21 +305,29 @@ Content-Length: 38
 no such protection system in database
 ```
 That's right, because in our database we don't have such protection system with name "AES 4". Let's make it nice:
-- curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES 2","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}' http://localhost:5000/content
+```
+curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES 2","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}' http://localhost:5000/content
+```
 Result will be 200. Let's check that now we have 4 content in our database:
-- curl -X GET "http://localhost:5000/content"
+```
+curl -X GET "http://localhost:5000/content"
+```
 Result:
 ```
 [{"id":1,"protection_system_name":"AES 2","content_key":"superpass","payload":"U2FsdGVkX190cOearjAhFozvAQFjW53OUhLQGKfTVZnj8iOwveiaZ8rqAPNBjeDB"},{"id":2,"protection_system_name":"AES 1","content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"},{"id":3,"protection_system_name":"AES 2","content_key":"badpass","payload":"U2FsdGVkX1+lxfJ2qOz/uA7NTprwWXhaMaQLNHPBsyNB+R1lyhPRCyUq13VvkRDp"},{"id":4,"protection_system_name":"AES 2","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}]
 ```
 Content with ID=4 is our new content. Let's see our new content closer:
-- curl -X GET "http://localhost:5000/content/4"
+```
+curl -X GET "http://localhost:5000/content/4"
+```
 Result:
 ```
 {"id":4,"protection_system_name":"AES 2","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}
 ```
 4) Let's try to watch some content. For example - with id=3 and on "Samsung":
-- curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"Samsung"}' http://localhost:5000/view
+```
+curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"Samsung"}' http://localhost:5000/view
+```
 Result:
 ```
 HTTP/1.1 417 Expectation Failed
@@ -325,7 +339,9 @@ Content-Length: 28
 invalid payload in database
 ```
 Well, we have damaged content in our database with ID=3. Let's try to watch with content id = 4:
-- curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":4,"Device":"Samsung"}' http://localhost:5000/view
+```
+curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":4,"Device":"Samsung"}' http://localhost:5000/view
+```
 Response:
 ```
 HTTP/1.1 200 OK
@@ -337,7 +353,9 @@ Content-Length: 20
 ```
 Okay, this is good content! Decrypted data is "full_metal_jacket" - movie from Stanley Kubrick.
 5) Let's trying to fix content with id=3 - we replace old data with new, but let's use bad key:
-- curl -i -H "Content-Type: application/json" -X PUT -d '{"protection_system_name":"AES 1","content_key":"pass","payload":"U2FsdGVkX18PJILwscA+WPkF9jB+vtBMH4hjEVhQU1Wl+Zbi75xtwQuOhKVEuyEh"}' http://localhost:5000/content/3
+```
+curl -i -H "Content-Type: application/json" -X PUT -d '{"protection_system_name":"AES 1","content_key":"pass","payload":"U2FsdGVkX18PJILwscA+WPkF9jB+vtBMH4hjEVhQU1Wl+Zbi75xtwQuOhKVEuyEh"}' http://localhost:5000/content/3
+```
 Result:
 ```
 HTTP/1.1 400 Bad Request
@@ -349,15 +367,21 @@ Content-Length: 16
 invalid payload
 ```
 Let's input right key:
-- curl -i -H "Content-Type: application/json" -X PUT -d '{"protection_system_name":"AES 1","content_key":"superpass","payload":"U2FsdGVkX18PJILwscA+WPkF9jB+vtBMH4hjEVhQU1Wl+Zbi75xtwQuOhKVEuyEh"}' http://localhost:5000/content/3
+```
+curl -i -H "Content-Type: application/json" -X PUT -d '{"protection_system_name":"AES 1","content_key":"superpass","payload":"U2FsdGVkX18PJILwscA+WPkF9jB+vtBMH4hjEVhQU1Wl+Zbi75xtwQuOhKVEuyEh"}' http://localhost:5000/content/3
+```
 Result 200 OK. Okay, let's check our damaged content now:
-- curl -i -X GET http://localhost:5000/content/3
+```
+curl -i -X GET http://localhost:5000/content/3
+```
 Result:
 ```
 {"id":3,"protection_system_name":"AES 2","content_key":"superpass","payload":"U2FsdGVkX18PJILwscA+WPkF9jB+vtBMH4hjEVhQU1Wl+Zbi75xtwQuOhKVEuyEh"}
 ```
 Looks like it's good. Let's check it on "iOS" device:
--curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"iOS"}' http://localhost:5000/view
+```
+curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"iOS"}' http://localhost:5000/view
+```
 Response:
 ```
 HTTP/1.1 451 Unavailable For Legal Reasons
@@ -369,7 +393,9 @@ Content-Length: 23
 content can't be shown
 ```
 Well, it's because our device can't work with "AES 2" format. Let's try this content on "LG":
-- curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"LG"}' http://localhost:5000/view
+```
+curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"LG"}' http://localhost:5000/view
+```
 And response is:
 ```
 HTTP/1.1 200 OK
@@ -381,7 +407,9 @@ Content-Length: 24
 ```
 Now we have fixed content with id=3.
 6) Let's see some content data with realy big content id:
-- curl -i -X GET http://localhost:5000/content/777
+```
+curl -i -X GET http://localhost:5000/content/777
+```
 Result:
 ```
 HTTP/1.1 404 Not Found
@@ -394,9 +422,13 @@ no such content in database
 ```
 Well, this is right, because we don't have content with id = 777.
 7) We've trying to get content with id=3 on our "iOS" device, that didn't work with "AES 2". Let's make it "AES 1":
+```
 - curl -i -H "Content-Type: application/json" -X PUT -d '{"protection_system_name":"AES 1"}' http://localhost:5000/content/3
+```
 Response: 200 OK. It means that now we can watch our content with id=3 on "iOS" device. Let's try:
-- curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"iOS"}' http://localhost:5000/view
+```
+curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"iOS"}' http://localhost:5000/view
+```
 Response:
 ```
 HTTP/1.1 200 OK
@@ -407,9 +439,13 @@ Content-Length: 24
 "wow_it_super_password"
 ```
 8) We've seen our content with id=3 on different devices. Let's delete this content:
-- curl -i -X DELETE http://localhost:5000/content/3
+```
+curl -i -X DELETE http://localhost:5000/content/3
+```
 Response: 200 OK. So let's see what we have now:
-- curl -i -X GET http://localhost:5000/content
+```
+curl -i -X GET http://localhost:5000/content
+```
 Response:
 ```
 [{"id":1,"protection_system_name":"AES 2","content_key":"superpass","payload":"U2FsdGVkX190cOearjAhFozvAQFjW53OUhLQGKfTVZnj8iOwveiaZ8rqAPNBjeDB"},{"id":2,"protection_system_name":"AES 1","content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"},{"id":4,"protection_system_name":"AES 2","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}]
