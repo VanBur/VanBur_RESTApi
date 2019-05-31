@@ -67,21 +67,19 @@ Was taken from exercise.
 
 2) Devices
 
-id  |name      |protection_system_id
-
-1   |Android   |1
-
-2   |Samsung   |2
-
-3   |iOS       |1
-
-4   |LG        |2
+| id  | name  | protection_system_id |
+| --- | ----- |--------------------- |
+|  1  | Android | 1 |
+|  2  | Samsung | 2 |
+|  3  | iOS | 1 |
+|  4  | LG | 2 |
 
 Was taken from exercise.
 
 3) Content
 
-id   |protection_system_id  |content_key   |payload
+| id  | protection_system_id  | content_key | payload |
+| --- | ----- |--------------------- | -------- |
 
 Created by me.
 
