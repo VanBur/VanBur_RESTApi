@@ -336,6 +336,7 @@ ________________________________________________________________________________
 ```
 # Easy demo
 Here you can step-by-step try API functionality. Just copy and paste commands into terminal:
+
 1) Build and run api-server in DEMO mode:
 ```
 go get ./...
@@ -347,6 +348,7 @@ You need to little wait when docker with MySQL database will up. It's about 10 s
 Checking needed utils...ON
 Connecting to DataBase.............ON
 ```
+
 2) Let's see what content we have in database:
 ```
 curl -X GET "http://localhost:5000/content"
@@ -356,6 +358,7 @@ You will see list of all content in database:
 [{"id":2,"protection_system_name":"AES 1","content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"},{"id":1,"protection_system_name":"AES 2","content_key":"superpass","payload":"U2FsdGVkX190cOearjAhFozvAQFjW53OUhLQGKfTVZnj8iOwveiaZ8rqAPNBjeDB"},{"id":3,"protection_system_name":"AES 2","content_key":"badpass","payload":"U2FsdGVkX1+lxfJ2qOz/uA7NTprwWXhaMaQLNHPBsyNB+R1lyhPRCyUq13VvkRDp"}]
 ```
 First and second - good data, but last one - damaged.
+
 3) Let's add some content data:
 ```
 curl -i -H "Content-Type: application/json" -X POST -d '{"protection_system_name":"AES 4","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}' http://localhost:5000/content
@@ -390,6 +393,7 @@ Result:
 ```
 {"id":4,"protection_system_name":"AES 2","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}
 ```
+
 4) Let's try to watch some content. For example - with id=3 and on "Samsung":
 ```
 curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":3,"Device":"Samsung"}' http://localhost:5000/view
@@ -418,6 +422,7 @@ Content-Length: 20
 "full_metal_jacket"
 ```
 Okay, this is good content! Decrypted data is "full_metal_jacket" - movie from Stanley Kubrick.
+
 5) Let's trying to fix content with id=3 - we replace old data with new, but let's use bad key:
 ```
 curl -i -H "Content-Type: application/json" -X PUT -d '{"protection_system_name":"AES 1","content_key":"pass","payload":"U2FsdGVkX18PJILwscA+WPkF9jB+vtBMH4hjEVhQU1Wl+Zbi75xtwQuOhKVEuyEh"}' http://localhost:5000/content/3
@@ -472,6 +477,7 @@ Content-Length: 24
 "wow_it_super_password"
 ```
 Now we have fixed content with id=3.
+
 6) Let's see some content data with realy big content id:
 ```
 curl -i -X GET http://localhost:5000/content/777
@@ -487,6 +493,7 @@ Content-Length: 28
 no such content in database
 ```
 Well, this is right, because we don't have content with id = 777.
+
 7) We've trying to get content with id=3 on our "iOS" device, that didn't work with "AES 2". Let's make it "AES 1":
 ```
 - curl -i -H "Content-Type: application/json" -X PUT -d '{"protection_system_name":"AES 1"}' http://localhost:5000/content/3
@@ -504,6 +511,7 @@ Content-Length: 24
 
 "wow_it_super_password"
 ```
+
 8) We've seen our content with id=3 on different devices. Let's delete this content:
 ```
 curl -i -X DELETE http://localhost:5000/content/3
