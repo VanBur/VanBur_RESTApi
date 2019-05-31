@@ -83,7 +83,10 @@ Created by me.
 
 
 # Api usage
-1) GetContent (GET method) - endpoint to get all content from database.     
+1) GetContent (GET method) - endpoint to get all content from database.   
+Logic:
+- go to DB and get all content data. If it failed - get error;
+- return HTTP 200 with all content data in JSON struct.
 Usage: 
 ```
   host_address:port/content
@@ -109,6 +112,11 @@ Return:
       "payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}]
 ```
 2) GetContentById (GET method) - endpoint to get content with selected ID (int).
+Logic:
+- check "id" in URL. If not valid - get error;
+- go to DB and get current content data. If it failed - get error;
+- if response is null - get error.
+- return HTTP 200 with content data in JSON struct.
 Usage:
 ```
   host_address:port/content/<id>
@@ -135,7 +143,14 @@ ________________________________________________________________________________
     400 Bad Request
     invalid content ID
 ```
-3) AddContent (POST method) - endpoint to add new content.    
+3) AddContent (POST method) - endpoint to add new content.  
+Logic:
+- decode request JSON. If not valid - get error;
+- check struct as content data. If not valid - get error;
+- check protection system. If we don't have it in DB - get error;
+- check payload to decryption. If we can't decrypt it - get error;
+- go to DB and add current content data. If it failed - get error;
+- return HTTP 200.
 Usage:
 ```
   host_address:port/content
@@ -181,6 +196,17 @@ ________________________________________________________________________________
     no such protection system in database
 ```
 4) UpdateContent (PUT method) - endpoint to update content with selected ID (int).  
+Logic:
+- check "id" in URL. If not valid - get error;
+- decode request JSON. If not valid - get error;
+- check struct as content data. If not valid - get error;
+- check protection system if it set. If we don't have it in DB - get error;
+- if new paiload is empty - get old data from DB. If it failed or null - get error;
+- modern old params by new;
+- check old payload to decryption. If we can't decrypt it - get error;
+- check new payload to decryption. If we can't decrypt it - get error;
+- go to DB and update current content data. If it failed - get error;
+- return HTTP 200.
 Usage:
 ```
   host_address:port/content/<id>
@@ -232,6 +258,10 @@ ________________________________________________________________________________
     no such protection system in database
 ```
 5) DeleteContent (DELETE method) - endpoint to delete content with selected ID (int).  
+Logic:
+- check "id" in URL. If not valid - get error;
+- go to DB and delete current content data. If it failed - get error;
+- return HTTP 200.
 Usage:
 ```
   host_address:port/content/<id>
@@ -249,7 +279,16 @@ Example:
   Result:
     200 OK
 ```
-6) CheckView (GET method) - endpoint to get decrypted payload data from content with selected ID (int) with selected device name (string). 
+6) CheckView (GET method) - endpoint to get decrypted payload data from content with selected ID (int) with selected device name (string).
+Logic:
+- decode request JSON. If not valid - get error;
+- check struct as view content data. If not valid - get error;
+- check device if it set. If we don't have it in DB - get error;
+- go to DB and get payload, content_key and encryption_mode from current content_id and device name. If it failed - get error;
+- check that result from BD isn't null. If it's null - get error that user cant watch it;
+- check that our ecryption module can work with this encryption mode. If it can't - get error;
+- check payload to decryption. If we can't decrypt it - get error;
+- return HTTP 200 with decrypted data.
 Usage: 
 ```
   host_address:port/view
