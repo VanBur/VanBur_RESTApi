@@ -55,6 +55,33 @@ Help output:
   -version
         get current version.
 ```
+# MySQL tables
+1) Protection systems
+id   |name    |encryption_mode
+1    |AES 1   |AES + ECB
+2    |AES 2   |AES + CBC
+
+Was taken from exercise.
+
+2) Devices
+id  |name      |protection_system_id
+1   |Android   |1
+2   |Samsung   |2
+3   |iOS       |1
+4   |LG        |2
+
+Was taken from exercise.
+
+3) Content
+id   |protection_system_id  |content_key   |payload
+
+Created by me.
+1) id - auto_increment unique int;
+2) protection_system_id - int key from "Protection systems" table;
+3) content_key - VAR_CHAR encryption key to decrypt "payload";
+4) payload - VAR_CHAR encrypted data, that can be decrypted by "content_key" in "encryption_mode", taked from "Protection systems" by ID.
+
+
 # Api usage
 1) GetContent (GET method) - endpoint to get all content from database.     
 Usage: 
