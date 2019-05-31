@@ -58,11 +58,10 @@ Help output:
 # MySQL tables
 1) Protection systems
 
-id   |name    |encryption_mode
-
-1    |AES 1   |AES + ECB
-
-2    |AES 2   |AES + CBC
+| id  | name  | encryption_mode |
+| --- | ----- |---------------- |
+|  1  | AES 1 | AES + ECB       |
+|  2  | AES 2 | AES + CBC       |
 
 Was taken from exercise.
 
