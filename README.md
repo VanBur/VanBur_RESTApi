@@ -57,6 +57,7 @@ Help output:
 ```
 # MySQL tables
 1) Protection systems
+
 id   |name    |encryption_mode
 1    |AES 1   |AES + ECB
 2    |AES 2   |AES + CBC
@@ -64,6 +65,7 @@ id   |name    |encryption_mode
 Was taken from exercise.
 
 2) Devices
+
 id  |name      |protection_system_id
 1   |Android   |1
 2   |Samsung   |2
@@ -73,17 +75,22 @@ id  |name      |protection_system_id
 Was taken from exercise.
 
 3) Content
+
 id   |protection_system_id  |content_key   |payload
 
 Created by me.
-1) id - auto_increment unique int;
-2) protection_system_id - int key from "Protection systems" table;
-3) content_key - VAR_CHAR encryption key to decrypt "payload";
-4) payload - VAR_CHAR encrypted data, that can be decrypted by "content_key" in "encryption_mode", taked from "Protection systems" by ID.
 
+1) id - auto_increment unique int;
+
+2) protection_system_id - int key from "Protection systems" table;
+
+3) content_key - VAR_CHAR encryption key to decrypt "payload";
+
+4) payload - VAR_CHAR encrypted data, that can be decrypted by "content_key" in "encryption_mode", taked from "Protection systems" by ID.
 
 # Api usage
 1) GetContent (GET method) - endpoint to get all content from database.   
+
 Logic:
 - go to DB and get all content data. If it failed - get error;
 - return HTTP 200 with all content data in JSON struct.
@@ -112,6 +119,7 @@ Return:
       "payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"}]
 ```
 2) GetContentById (GET method) - endpoint to get content with selected ID (int).
+
 Logic:
 - check "id" in URL. If not valid - get error;
 - go to DB and get current content data. If it failed - get error;
@@ -144,6 +152,7 @@ ________________________________________________________________________________
     invalid content ID
 ```
 3) AddContent (POST method) - endpoint to add new content.  
+
 Logic:
 - decode request JSON. If not valid - get error;
 - check struct as content data. If not valid - get error;
@@ -196,6 +205,7 @@ ________________________________________________________________________________
     no such protection system in database
 ```
 4) UpdateContent (PUT method) - endpoint to update content with selected ID (int).  
+
 Logic:
 - check "id" in URL. If not valid - get error;
 - decode request JSON. If not valid - get error;
@@ -258,6 +268,7 @@ ________________________________________________________________________________
     no such protection system in database
 ```
 5) DeleteContent (DELETE method) - endpoint to delete content with selected ID (int).  
+
 Logic:
 - check "id" in URL. If not valid - get error;
 - go to DB and delete current content data. If it failed - get error;
@@ -280,6 +291,7 @@ Example:
     200 OK
 ```
 6) CheckView (GET method) - endpoint to get decrypted payload data from content with selected ID (int) with selected device name (string).
+
 Logic:
 - decode request JSON. If not valid - get error;
 - check struct as view content data. If not valid - get error;
