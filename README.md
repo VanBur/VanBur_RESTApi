@@ -517,6 +517,7 @@ Response:
 [{"id":1,"protection_system_name":"AES 2","content_key":"superpass","payload":"U2FsdGVkX190cOearjAhFozvAQFjW53OUhLQGKfTVZnj8iOwveiaZ8rqAPNBjeDB"},{"id":2,"protection_system_name":"AES 1","content_key":"mypassword","payload":"U2FsdGVkX1+lxfHPBsyNB+R1lJ2qOz/uA7NTprwWXhaMaQLNyhPRCyUq13VvkRDp"},{"id":4,"protection_system_name":"AES 2","content_key":"popi","payload":"U2FsdGVkX18fO6a7VqCp2W2vcUGTbZqpzxJoHtR+80sy+ngb16+9OQBFPtH2aXxd"}]
 ```
 So, content with id=3 was deleted. And demo is over;)
+9) Press CTRL+C to determinate application. Before determinate, it will stop and remove docker container with demo MySQL database.
 
 # Tests
 To run unit-tests you need to go to folder where you can find some 'XXX_test.go' file and run:
