@@ -91,6 +91,46 @@ Created by me.
 
 4) payload - VAR_CHAR encrypted data, that can be decrypted by "content_key" in "encryption_mode", taked from "Protection systems" by ID.
 
+# Encryption module
+Encryption module was created on OPENSSL-based logic.
+Openssl was selected because it's free and used by everyone for generate some SSL-keys.
+Openssl can enc/dec strings, binary data, files and etc.
+Encryption usage in application:
+```
+echo <data_to_encr> | openssl <type_of_encr> -a -salt -k <encryption_key>
+```
+, where:
+- data_to_encr - string to encrypt
+- type_of_encr - encryption type (selected ["aes-128-cbc", "aes-128-ecb"])
+- encryption_key - string as key to encryption
+
+Example:
+```
+echo string_to_encrypt | openssl aes-128-ecb -a -salt -k encKey
+```
+result:
+```
+U2FsdGVkX19hja6KGd8EVf9fiPrWyqTjD0P7DEBs+CHibaUVYpYV38gtW0bpFXtH
+```
+
+Decryption usage in application:
+```
+echo <data_to_decr> | openssl <type_of_decr> -a -salt -k <decryption_key>
+```
+, where:
+- data_to_decr - encrypted string to decrypt
+- type_of_decr - decryption type (selected ["aes-128-cbc", "aes-128-ecb"])
+- decryption_key - string as key to decryption
+
+Example:
+```
+echo U2FsdGVkX19hja6KGd8EVf9fiPrWyqTjD0P7DEBs+CHibaUVYpYV38gtW0bpFXtH | openssl aes-128-ecb -d -a -salt -k encKey
+```
+result:
+```
+string_to_encrypt
+```
+
 # Api usage
 1) GetContent (GET method) - endpoint to get all content from database.   
 
