@@ -13,7 +13,6 @@
 package main
 
 import (
-	"database/sql"
 	"errors"
 	"flag"
 	"fmt"
@@ -79,7 +78,7 @@ func main() {
 
 	fmt.Print("Connecting to DataBase...")
 	// Connecting to database
-	var db *sql.DB
+	//var db *sql.DB
 	if *demoMode {
 		// In demo-mode docker will be used as mysql host
 		err = dockerMYSQL.StartDockerDB()
@@ -97,14 +96,14 @@ func main() {
 			User:   config.DB_USER,
 			Pass:   config.DB_PASS,
 		}
-		db, err = mysqlmodule.ConnectToDataBase(dbConfig)
+		err = mysqlmodule.ConnectToDataBase(dbConfig)
 		if err != nil {
 			fmt.Println("ERROR")
 			fmt.Printf("Problem with database connect. Error:%s", err.Error())
 			logger.Log.Fatalf("Problem with database connect. Error:%s", err.Error())
 		}
 		dumpPath := filepath.Join("src", "mysqlmodule", "dumps", config.DUMP_WITH_CONTENT_PATH)
-		err = mysqlmodule.LoadDump(db, dumpPath)
+		err = mysqlmodule.LoadDump(dumpPath)
 		if err != nil {
 			fmt.Println("ERROR")
 			fmt.Printf("Problem with database dump. Error:%s", err.Error())
@@ -117,36 +116,40 @@ func main() {
 			Host:   *dbHost,
 			Port:   *dbPort,
 			DBName: *dbName}
-		db, err = mysqlmodule.ConnectToDataBase(dbConf)
+		err = mysqlmodule.ConnectToDataBase(dbConf)
 		if err != nil {
 			fmt.Println("ERROR")
 			fmt.Printf("Problem with database connect. Error:%s", err.Error())
 			logger.Log.Fatalf("Problem with database connect. Error:%s", err.Error())
 		}
 	}
-	defer db.Close()
-	closer.Bind(func() {
-		if db.Stats().OpenConnections != 0 {
-			db.Close()
-		}
-	})
+	closer.Bind(mysqlmodule.DisconnectFromDataBase)
+	//defer db.Close()
+	/*
+		closer.Bind(func() {
+			if db.Stats().OpenConnections != 0 {
+				db.Close()
+			}
+		})
+
+	*/
 	fmt.Println("ON")
 
 	// Update devices and protection systems cache if needed
-	err = updateCacheData(db)
+	err = updateCacheData()
 	if err != nil {
 		fmt.Println("Trouble by updating cache.")
 		logger.Log.Fatalf("'Update cache' - problem with database. Error:%s", err.Error())
 	}
-	restapi.RESTApi(*apiPort, db)
+	restapi.RESTApi(*apiPort)
 
 	closer.Hold()
 }
 
 //updateCacheData is a function for update application cached 'devices' and 'protection systems' data if needed
 // return error if was some database error
-func updateCacheData(db *sql.DB) error {
-	protSys, err := mysqlmodule.GetProtectionSystems(db)
+func updateCacheData() error {
+	protSys, err := mysqlmodule.GetProtectionSystems()
 	if err != nil {
 		return err
 	}
@@ -156,7 +159,7 @@ func updateCacheData(db *sql.DB) error {
 		fmt.Println("Protection Systems was updated")
 	}
 
-	dev, err := mysqlmodule.GetDevices(db)
+	dev, err := mysqlmodule.GetDevices()
 	if err != nil {
 		return err
 	}

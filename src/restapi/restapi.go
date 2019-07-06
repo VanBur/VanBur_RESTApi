@@ -20,10 +20,7 @@ import (
 	"restapiserver/src/mysqlmodule"
 )
 
-var db *sql.DB
-
-func RESTApi(port int, _db *sql.DB) {
-	db = _db
+func RESTApi(port int) {
 	// Create some API listenners
 	router := httprouter.New()
 	router.GET("/content", GetContent)
@@ -47,7 +44,7 @@ func RESTApi(port int, _db *sql.DB) {
 func GetContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 	// database exec
-	result, err := mysqlmodule.GetContent(db)
+	result, err := mysqlmodule.GetContent()
 	if err != nil {
 		logger.Log.Printf("restapi : Get content : ip=%s : http status=%d : Error=%s", r.Host, http.StatusBadGateway, errors.DATABASE_PROBLEM)
 		logger.Log.Println("- error info:", err)
@@ -75,7 +72,7 @@ func GetContentById(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		return
 	}
 	// database exec
-	result, err := mysqlmodule.GetContentById(db, id)
+	result, err := mysqlmodule.GetContentById(id)
 	if err == sql.ErrNoRows {
 		logger.Log.Printf("restapi : Get content by id : ip=%s : http status=%d : Error=%s", r.Host, http.StatusBadRequest, errors.NO_SUCH_CONTENT_IN_DATABASE)
 		logger.Log.Println("- error info:", err)
@@ -134,7 +131,7 @@ func AddContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 	// database exec
-	err = mysqlmodule.AddContent(db, contentParams)
+	err = mysqlmodule.AddContent(contentParams)
 	if err != nil {
 		logger.Log.Printf("restapi : Add content : ip=%s : http status=%d : Error=%s", r.Host, http.StatusBadRequest, errors.DATABASE_PROBLEM)
 		logger.Log.Println("- error info:", err.Error())
@@ -189,7 +186,7 @@ func UpdateContent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 
 	if models.IsValidContentData(newContentData, true) == false {
-		oldContentData, err := mysqlmodule.GetContentById(db, id)
+		oldContentData, err := mysqlmodule.GetContentById(id)
 		if err == sql.ErrNoRows {
 			logger.Log.Printf("restapi : Update content : ip=%s : http status=%d : Error=%s", r.Host, http.StatusBadRequest, errors.NO_SUCH_CONTENT_IN_DATABASE)
 			logger.Log.Println("- error info:", err)
@@ -217,7 +214,7 @@ func UpdateContent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 
 	// database exec
-	err = mysqlmodule.UpdateContent(db, id, newContentData)
+	err = mysqlmodule.UpdateContent(id, newContentData)
 	if err != nil {
 		logger.Log.Printf("restapi : Update content : ip=%s : http status=%d : Error=%s", r.Host, http.StatusBadGateway, errors.DATABASE_PROBLEM)
 		logger.Log.Println("- error info:", err.Error())
@@ -244,7 +241,7 @@ func DeleteContent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 	// database exec
-	err = mysqlmodule.DeleteContent(db, id)
+	err = mysqlmodule.DeleteContent(id)
 	if err != nil {
 		logger.Log.Printf("restapi : Delete content : ip=%s : http status=%d : Error=%s", r.Host, http.StatusBadGateway, errors.DATABASE_PROBLEM)
 		logger.Log.Println("- error info:", err.Error())
@@ -283,7 +280,7 @@ func ViewContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	encrMedia, err := mysqlmodule.GetEncryptedMedia(db, viewContentParams)
+	encrMedia, err := mysqlmodule.GetEncryptedMedia(viewContentParams)
 	if err == sql.ErrNoRows {
 		logger.Log.Printf("restapi : View content : ip=%s : http status=%d : Error=%s", r.Host, http.StatusUnavailableForLegalReasons, errors.CONTENT_CANT_BE_SHOWN)
 		logger.Log.Println("- error info:", err)

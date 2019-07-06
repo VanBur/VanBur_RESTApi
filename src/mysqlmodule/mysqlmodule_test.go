@@ -8,7 +8,6 @@ link to MySql Docker hub 	: https://hub.docker.com/_/mysql
 package mysqlmodule
 
 import (
-	"database/sql"
 	"fmt"
 	"path/filepath"
 	"testing"
@@ -50,8 +49,6 @@ var testViewContentData = []viewContentTestStruct{
 	{models.ViewContent{1, "Huawei"}, ""},
 }
 
-var db *sql.DB
-
 func TestContent(t *testing.T) {
 	var err error
 	fmt.Print("Starting docker with database")
@@ -68,20 +65,20 @@ func TestContent(t *testing.T) {
 		User:   mysql.DOCKER_DB_USER,
 		Pass:   mysql.DOCKER_DB_PASS,
 	}
-	db, err = ConnectToDataBase(dbConfig)
+	err = ConnectToDataBase(dbConfig)
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	defer DisconnectFromDataBase()
 
 	dumpPath := filepath.Join("dumps", config.DUMP_CLEAR_DB_PATH)
-	err = LoadDump(db, dumpPath)
+	err = LoadDump(dumpPath)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("ok")
 	// Get protection systems
-	ps, _ := GetProtectionSystems(db)
+	ps, _ := GetProtectionSystems()
 	if len(ps) != len(models.PROTECTION_SCHEMES) {
 		t.Error(
 			"Expected total number of content =", len(models.PROTECTION_SCHEMES),
@@ -90,7 +87,7 @@ func TestContent(t *testing.T) {
 	}
 
 	// Get devices
-	devices, _ := GetDevices(db)
+	devices, _ := GetDevices()
 	if len(devices) != len(models.DEVICES) {
 		t.Error(
 			"Expected total number of content =", len(models.DEVICES),
@@ -100,7 +97,7 @@ func TestContent(t *testing.T) {
 
 	// Add content tests
 	for _, testPair := range testContentData {
-		e := AddContent(db, testPair.contentData)
+		e := AddContent(testPair.contentData)
 		if e != testPair.err {
 			t.Error(
 				"For data", testPair.contentData,
@@ -111,7 +108,7 @@ func TestContent(t *testing.T) {
 
 	// Get content by id tests
 	for _, testPair := range testContentData {
-		v, _ := GetContentById(db, testPair.contentData.ID)
+		v, _ := GetContentById(testPair.contentData.ID)
 		if v.ProtectionSystemName != testPair.contentData.ProtectionSystemName || v.Payload != testPair.contentData.Payload || v.ContentKey != testPair.contentData.ContentKey {
 			t.Error(
 				"For data", testPair.contentData,
@@ -121,7 +118,7 @@ func TestContent(t *testing.T) {
 	}
 
 	// Get content test
-	allContent, _ := GetContent(db)
+	allContent, _ := GetContent()
 	if len(allContent) != len(testContentData) {
 		t.Error(
 			"Expected total number of content =", len(testContentData),
@@ -131,7 +128,7 @@ func TestContent(t *testing.T) {
 
 	// View content tests
 	for _, testPair := range testViewContentData {
-		v, e := GetEncryptedMedia(db, testPair.contentData)
+		v, e := GetEncryptedMedia(testPair.contentData)
 		if e == nil && v.Payload != testPair.result {
 			t.Error(
 				"For data", testPair.contentData,
@@ -142,7 +139,7 @@ func TestContent(t *testing.T) {
 
 	// Update content tests
 	for _, testPair := range testUpdatedContentData {
-		e := UpdateContent(db, testPair.contentData.ID, testPair.contentData)
+		e := UpdateContent(testPair.contentData.ID, testPair.contentData)
 		if e != testPair.err {
 			t.Error(
 				"For data", testPair.contentData,
@@ -152,7 +149,7 @@ func TestContent(t *testing.T) {
 	}
 
 	for _, testPair := range testUpdatedContentData {
-		v, _ := GetContentById(db, testPair.contentData.ID)
+		v, _ := GetContentById(testPair.contentData.ID)
 		if (testPair.contentData.ProtectionSystemName != "" && v.ProtectionSystemName != testPair.contentData.ProtectionSystemName) ||
 			(testPair.contentData.Payload != "" && v.Payload != testPair.contentData.Payload) ||
 			(testPair.contentData.ContentKey != "" && v.ContentKey != testPair.contentData.ContentKey) {
@@ -165,14 +162,14 @@ func TestContent(t *testing.T) {
 
 	// Delete content test
 	deletedId := 2
-	err = DeleteContent(db, deletedId)
+	err = DeleteContent(deletedId)
 	if err != nil {
 		t.Error(
 			"Delete data was with error :", err,
 			",expected", nil,
 		)
 	}
-	v, err := GetContentById(db, deletedId)
+	v, err := GetContentById(deletedId)
 	if err == nil {
 		t.Error("Content", v, "wasn't deleted")
 	}

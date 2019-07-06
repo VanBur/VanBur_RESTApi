@@ -29,7 +29,7 @@ const (
 
 const ERROR_BAD_DECRYPT = "aesmodule : bad decrypt"
 
-//Encrypter is a function that generate encrypted string from simple string + enryption key
+// Encrypter is a function that generate encrypted string from simple string + enryption key
 // 'encType' is a parameter of some AES - modes
 func Encrypter(key, data, encType string) (string, error) {
 	c1 := exec.Command("echo", data)
@@ -37,7 +37,7 @@ func Encrypter(key, data, encType string) (string, error) {
 	return pipingExec(c1, c2)
 }
 
-//Encrypter is a function that generate decrypted string from encrypted with enryption key
+// Encrypter is a function that generate decrypted string from encrypted with enryption key
 // 'encType' is a parameter of some AES - modes
 func Decrypter(key, data, encType string) (string, error) {
 	c1 := exec.Command("echo", data)
@@ -45,7 +45,7 @@ func Decrypter(key, data, encType string) (string, error) {
 	return pipingExec(c1, c2)
 }
 
-//pipingExec is a function that make piping nice and easy + anti-duplication code
+// pipingExec is a function that make piping nice and easy + anti-duplication code
 func pipingExec(c1, c2 *exec.Cmd) (string, error) {
 	r, w := io.Pipe()
 	c1.Stdout = w
@@ -69,7 +69,7 @@ func pipingExec(c1, c2 *exec.Cmd) (string, error) {
 	return strings.Replace(b2o.String(), "\n", "", 1), nil
 }
 
-//ConvertDatabaseEncTypeToAesModule is a function to get understandable format for openssl-aes-module.
+// ConvertDatabaseEncTypeToAesModule is a function to get understandable format for openssl-aes-module.
 // return string with needed type of AES-encryption or error if openssl-aes-module cant working with this type
 // of encryption
 func ConvertDatabaseEncTypeToAesModule(inputType string) (string, error) {

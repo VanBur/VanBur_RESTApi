@@ -11,8 +11,8 @@ const LOG_FOLDER = "logs"
 const LOG_FILE_NAME = "info.log"
 
 // MySql dump paths
-const DUMP_CLEAR_DB_PATH = "testbd.sql"
-const DUMP_WITH_CONTENT_PATH = "testbdwithcontent.sql"
+const DUMP_CLEAR_DB_PATH = "test_bd_clean.sql"
+const DUMP_WITH_CONTENT_PATH = "test_bd_with_content.sql"
 
 // Port for this application
 var API_PORT = 5000

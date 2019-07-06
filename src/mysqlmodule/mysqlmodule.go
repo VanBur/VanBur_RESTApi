@@ -6,6 +6,7 @@ package mysqlmodule
 import (
 	"bufio"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -53,28 +54,37 @@ const (
 	_GET_DEVICES            = "SELECT * FROM devices"
 )
 
+var db *sql.DB
+
 // ConnectToDataBase is a function to connect application to database and make sure that db is connected by ping.
 // return pointer to database and error if something's going wrong.
-func ConnectToDataBase(cnf DbConfig) (*sql.DB, error) {
+//func ConnectToDataBase(cnf DbConfig) (*sql.DB, error) {
+func ConnectToDataBase(cnf DbConfig) error {
 	connSettings := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cnf.User, cnf.Pass, cnf.Host, cnf.Port, cnf.DBName)
-	db, err := sql.Open("mysql", connSettings)
+	var err error
+	db, err = sql.Open("mysql", connSettings)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	for i := 0; i < _DATABASE_PING_COUNT; i++ {
-		err := pingToDatabase(db)
+		err := pingToDatabase()
 		if err != nil {
 			time.Sleep(_DATABASE_PING_SLEEP * time.Second)
 		} else {
 			break
 		}
 	}
-	return db, nil
+	return nil
+}
+
+func DisconnectFromDataBase() {
+	db.Close()
+	fmt.Println("DB disconnected")
 }
 
 // pingToDatabase is a function to ping database for checking connect
 // return error if ping was failed
-func pingToDatabase(db *sql.DB) error {
+func pingToDatabase() error {
 	err := db.Ping()
 	if err != nil {
 		return err
@@ -84,7 +94,7 @@ func pingToDatabase(db *sql.DB) error {
 
 // GetContent is a function to get list of all content from database
 // return pointer to slice of content and error if something's going wrong.
-func GetContent(db *sql.DB) ([]*models.Content, error) {
+func GetContent() ([]*models.Content, error) {
 	rows, err := db.Query(_GET_CONTENT_MYSQL)
 	if err != nil {
 		return nil, err
@@ -109,7 +119,7 @@ func GetContent(db *sql.DB) ([]*models.Content, error) {
 // GetDevices is a function to get list of all devices data from database.
 // Needs to validate cashed 'Devices' slice
 // return pointer to slice of structs and error if something's going wrong.
-func GetDevices(db *sql.DB) ([]models.Device, error) {
+func GetDevices() ([]models.Device, error) {
 	rows, err := db.Query(_GET_DEVICES)
 	if err != nil {
 		return nil, err
@@ -134,7 +144,7 @@ func GetDevices(db *sql.DB) ([]models.Device, error) {
 // GetProtectionSystems is a function to get list of all protection systems data from database.
 // Needs to validate cashed 'Protection Systems' slice
 // return pointer to slice of structs and error if something's going wrong.
-func GetProtectionSystems(db *sql.DB) ([]models.ProtectionSystem, error) {
+func GetProtectionSystems() ([]models.ProtectionSystem, error) {
 	rows, err := db.Query(_GET_PROTECTION_SYSTEMS)
 	if err != nil {
 		return nil, err
@@ -158,7 +168,7 @@ func GetProtectionSystems(db *sql.DB) ([]models.ProtectionSystem, error) {
 
 // GetContentById is a function to get content data with selected id from database.
 // return pointer to selected content data and error if something's going wrong.
-func GetContentById(db *sql.DB, contentId int) (*models.Content, error) {
+func GetContentById(contentId int) (*models.Content, error) {
 	row := db.QueryRow(_GET_CONTENT_BY_ID_MYSQL, contentId)
 	content := new(models.Content)
 	err := row.Scan(&content.ID, &content.ProtectionSystemName, &content.ContentKey, &content.Payload)
@@ -170,9 +180,9 @@ func GetContentById(db *sql.DB, contentId int) (*models.Content, error) {
 
 // AddContent is a function to add content data to database.
 // return error if something's going wrong.
-func AddContent(db *sql.DB, params models.Content) error {
+func AddContent(params models.Content) error {
 	sql := _ADD_CONTENT_MYSQL
-	_, err := prepareAndExec(db, sql, params.ProtectionSystemName, params.ContentKey, params.Payload)
+	_, err := prepareAndExec(sql, params.ProtectionSystemName, params.ContentKey, params.Payload)
 	if err != nil {
 		return err
 	}
@@ -181,9 +191,9 @@ func AddContent(db *sql.DB, params models.Content) error {
 
 // UpdateContent is a function to update content data with selected id in database.
 // return error if something's going wrong.
-func UpdateContent(db *sql.DB, contentId int, params models.Content) error {
+func UpdateContent(contentId int, params models.Content) error {
 	sql := generateUpdateSqlFromParams(contentId, params)
-	_, err := prepareAndExec(db, sql)
+	_, err := prepareAndExec(sql)
 	if err != nil {
 		return err
 	}
@@ -192,9 +202,9 @@ func UpdateContent(db *sql.DB, contentId int, params models.Content) error {
 
 // DeleteContent is a function to delete content data with selected id from database.
 // return error if something's going wrong.
-func DeleteContent(db *sql.DB, contentId int) error {
+func DeleteContent(contentId int) error {
 	sql := _DELETE_CONTENT_MYSQL
-	_, err := prepareAndExec(db, sql, contentId)
+	_, err := prepareAndExec(sql, contentId)
 	if err != nil {
 		return err
 	}
@@ -203,7 +213,7 @@ func DeleteContent(db *sql.DB, contentId int) error {
 
 // GetEncryptedMedia is a function to get enrypted data with keys from database.
 // return pointer to selected enrypted data and error if something's going wrong.
-func GetEncryptedMedia(db *sql.DB, params models.ViewContent) (*models.EnryptedMedia, error) {
+func GetEncryptedMedia(params models.ViewContent) (*models.EnryptedMedia, error) {
 	row := db.QueryRow(_VIEW_CONTENT_MYSQL, params.ContentID, params.Device)
 	data := new(models.EnryptedMedia)
 	err := row.Scan(&data.EncryptionMode, &data.ContentKey, &data.Payload)
@@ -214,7 +224,10 @@ func GetEncryptedMedia(db *sql.DB, params models.ViewContent) (*models.EnryptedM
 }
 
 // LoadDump is a function for loading sql-dump to database
-func LoadDump(db *sql.DB, dump string) error {
+func LoadDump(dump string) error {
+	if db == nil {
+		return errors.New("Database isn't connected")
+	}
 	file, err := os.Open(dump)
 	if err != nil {
 		return err
@@ -223,7 +236,7 @@ func LoadDump(db *sql.DB, dump string) error {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		_, err = prepareAndExec(db, scanner.Text())
+		_, err = prepareAndExec(scanner.Text())
 		if err != nil {
 			return err
 		}
@@ -256,7 +269,7 @@ func generateUpdateSqlFromParams(contentId int, params models.Content) string {
 }
 
 // prepareAndExec is a function for anti-duplication code
-func prepareAndExec(db *sql.DB, sql string, execArgs ...interface{}) (sql.Result, error) {
+func prepareAndExec(sql string, execArgs ...interface{}) (sql.Result, error) {
 	prepForm, err := db.Prepare(sql)
 	if err != nil {
 		return nil, err

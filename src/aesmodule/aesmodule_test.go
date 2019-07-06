@@ -101,21 +101,3 @@ func TestCBCEcnrypter(t *testing.T) {
 		}
 	}
 }
-
-/*
-func TestCBCEcnrypter(t *testing.T) {
-	for _, pair := range cbcDecTests {
-		v, _ := Encrypter(pair.key, pair.decryptedData, TYPE_128_CBC)
-		if v != pair.encryptedData {
-			t.Error(
-				"For data", pair.decryptedData,
-				"with key", pair.key,
-				"expected", pair.encryptedData,
-				"got", v,
-			)
-		}
-	}
-}
-
-
-*/
