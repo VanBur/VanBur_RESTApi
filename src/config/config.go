@@ -4,7 +4,7 @@
 package config
 
 //Version of application
-const VERSION = "1.01"
+const VERSION = "1.04"
 
 //Log file path
 const LOG_FOLDER = "logs"

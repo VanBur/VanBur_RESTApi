@@ -40,7 +40,7 @@ func RESTApi(port int) {
 
 // getContent is an API GET method to getting from database content list by JSON.
 // example of curl-request:
-// curl -X GET "http://localhost:5000/content"
+//	curl -X GET "http://localhost:5000/content"
 func GetContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 	// database exec
@@ -60,7 +60,7 @@ func GetContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 // GetContentById is an API GET method to getting from database content with selected ID by JSON.
 // example of curl-request:
-// curl -X GET "http://localhost:5000/content/12"
+//	curl -X GET "http://localhost:5000/content/12"
 func GetContentById(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 	// Content_id validator
@@ -93,9 +93,9 @@ func GetContentById(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 
 // AddContent is an API POST method to add content with selected params to database.
 // example of curl-request:
-// curl -i -H "Content-Type: application/json" -X POST
-// -d '{"protection_system_name":"testAes","content_key":"testKey","payload":"testPayload"}'
-// http://localhost:5000/content
+//	curl -i -H "Content-Type: application/json" -X POST
+//	-d '{"protection_system_name":"testAes","content_key":"testKey","payload":"testPayload"}'
+//	http://localhost:5000/content
 func AddContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 	// Decode input JSON
@@ -146,7 +146,7 @@ func AddContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 // UpdateContent is an API PUT method to update content with selected params in database.
 // example of curl-request:
 //
-// curl -i -H "Content-Type: application/json" -X PUT
+// 	curl -i -H "Content-Type: application/json" -X PUT
 //	-d '{"protection_system_name":"testAes","content_key":"testKey","payload":"testPayload"}'
 //	http://localhost:5000/content/1
 func UpdateContent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -228,8 +228,7 @@ func UpdateContent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 // DeleteContent is an API DELETE method to delete content with selected id from database.
 // example of curl-request:
-//
-// curl -i -H "Content-Type: application/json" -X DELETE http://localhost:5000/content/1
+// 	curl -i -H "Content-Type: application/json" -X DELETE http://localhost:5000/content/1
 func DeleteContent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 	// Content_id validator
@@ -254,7 +253,7 @@ func DeleteContent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 // ViewContent is an API GET method to show or not decrypted payload with selected content id and device.
 // example of curl-request:
-// curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":1,"Device":"LG"}' http://localhost:5000/view
+// 	curl -i -H "Content-Type: application/json" -X GET -d '{"content_id":1,"Device":"LG"}' http://localhost:5000/view
 func ViewContent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 	var viewContentParams models.ViewContent

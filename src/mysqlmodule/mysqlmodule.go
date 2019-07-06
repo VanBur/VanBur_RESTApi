@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -60,6 +61,7 @@ var db *sql.DB
 // return pointer to database and error if something's going wrong.
 //func ConnectToDataBase(cnf DbConfig) (*sql.DB, error) {
 func ConnectToDataBase(cnf DbConfig) error {
+	log.Println("Connecting to MySQL database")
 	connSettings := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cnf.User, cnf.Pass, cnf.Host, cnf.Port, cnf.DBName)
 	var err error
 	db, err = sql.Open("mysql", connSettings)
@@ -74,12 +76,13 @@ func ConnectToDataBase(cnf DbConfig) error {
 			break
 		}
 	}
+	log.Println("DB connected")
 	return nil
 }
 
 func DisconnectFromDataBase() {
 	db.Close()
-	fmt.Println("DB disconnected")
+	log.Println("DB disconnected")
 }
 
 // pingToDatabase is a function to ping database for checking connect

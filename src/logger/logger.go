@@ -12,12 +12,18 @@ var Log *log.Logger
 
 //initial logger method
 func init() {
-	if _, err := os.Stat(config.LOG_FOLDER); os.IsNotExist(err) {
-		os.Mkdir(config.LOG_FOLDER, os.ModePerm)
+	var err error
+	_, err = os.Stat(config.LOG_FOLDER)
+	if os.IsNotExist(err) {
+		err = os.Mkdir(config.LOG_FOLDER, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	logPath := filepath.Join(config.LOG_FOLDER, config.LOG_FILE_NAME)
-	var f, err = os.Create(logPath)
+	var f *os.File
+	f, err = os.Create(logPath)
 	if err != nil {
 		panic(err)
 	}

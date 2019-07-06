@@ -16,6 +16,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -67,47 +68,39 @@ func main() {
 	}
 
 	// Is every util in PATH
-	fmt.Print("Checking needed utils...")
 	err := IsEverythingInstalled(config.REQUIRED_UTILS...)
 	if err != nil {
-		fmt.Println("ERROR")
-		fmt.Println("Problem with utils. Error:%s", err.Error())
-		logger.Log.Fatalf("Problem with utils. Error:%s", err.Error())
+		log.Printf("Problem with utils. Error: %s", err.Error())
+		os.Exit(0)
 	}
-	fmt.Println("ON")
 
-	fmt.Print("Connecting to DataBase...")
 	// Connecting to database
-	//var db *sql.DB
 	if *demoMode {
 		// In demo-mode docker will be used as mysql host
 		err = dockerMYSQL.StartDockerDB()
 		if err != nil {
-			fmt.Println("ERROR")
-			fmt.Printf("Problem with docker start. Error:%s", err.Error())
+			log.Printf("Problem with docker start. Error:%s", err.Error())
 			logger.Log.Fatalf("Problem with docker start. Error:%s", err.Error())
 		}
 		defer dockerMYSQL.StopDockerDB()
 		closer.Bind(dockerMYSQL.StopIfDockerStillAlive)
 		dbConfig := mysqlmodule.DbConfig{
-			Host:   config.DB_HOST,
-			Port:   config.DB_PORT,
-			DBName: config.DB_NAME,
-			User:   config.DB_USER,
-			Pass:   config.DB_PASS,
+			Host:   dockerMYSQL.DOCKER_DB_HOST,
+			Port:   dockerMYSQL.DOCKER_DB_PORT,
+			DBName: dockerMYSQL.DOCKER_DB_NAME,
+			User:   dockerMYSQL.DOCKER_DB_USER,
+			Pass:   dockerMYSQL.DOCKER_DB_PASS,
 		}
 		err = mysqlmodule.ConnectToDataBase(dbConfig)
 		if err != nil {
-			fmt.Println("ERROR")
-			fmt.Printf("Problem with database connect. Error:%s", err.Error())
-			logger.Log.Fatalf("Problem with database connect. Error:%s", err.Error())
+			log.Printf("Problem with database connect. Error: %s", err.Error())
+			logger.Log.Fatalf("Problem with database connect. Error: %s", err.Error())
 		}
 		dumpPath := filepath.Join("src", "mysqlmodule", "dumps", config.DUMP_WITH_CONTENT_PATH)
 		err = mysqlmodule.LoadDump(dumpPath)
 		if err != nil {
-			fmt.Println("ERROR")
-			fmt.Printf("Problem with database dump. Error:%s", err.Error())
-			logger.Log.Fatalf("Problem with database dump. Error:%s", err.Error())
+			log.Printf("Problem with database dump. Error: %s", err.Error())
+			logger.Log.Fatalf("Problem with database dump. Error: %s", err.Error())
 		}
 	} else {
 		var dbConf = mysqlmodule.DbConfig{
@@ -118,28 +111,16 @@ func main() {
 			DBName: *dbName}
 		err = mysqlmodule.ConnectToDataBase(dbConf)
 		if err != nil {
-			fmt.Println("ERROR")
-			fmt.Printf("Problem with database connect. Error:%s", err.Error())
-			logger.Log.Fatalf("Problem with database connect. Error:%s", err.Error())
+			log.Printf("Problem with database connect. Error: %s", err.Error())
+			logger.Log.Fatalf("Problem with database connect. Error: %s", err.Error())
 		}
 	}
 	closer.Bind(mysqlmodule.DisconnectFromDataBase)
-	//defer db.Close()
-	/*
-		closer.Bind(func() {
-			if db.Stats().OpenConnections != 0 {
-				db.Close()
-			}
-		})
-
-	*/
-	fmt.Println("ON")
-
 	// Update devices and protection systems cache if needed
 	err = updateCacheData()
 	if err != nil {
-		fmt.Println("Trouble by updating cache.")
-		logger.Log.Fatalf("'Update cache' - problem with database. Error:%s", err.Error())
+		log.Println("Trouble by updating cache.")
+		logger.Log.Fatalf("'Update cache' - problem with database. Error: %s", err.Error())
 	}
 	restapi.RESTApi(*apiPort)
 
@@ -156,7 +137,7 @@ func updateCacheData() error {
 	if len(protSys) != len(models.PROTECTION_SCHEMES) {
 		models.PROTECTION_SCHEMES = protSys
 		logger.Log.Printf("Protection Systems was updated")
-		fmt.Println("Protection Systems was updated")
+		log.Println("Protection Systems was updated")
 	}
 
 	dev, err := mysqlmodule.GetDevices()
@@ -166,7 +147,7 @@ func updateCacheData() error {
 	if len(dev) != len(models.DEVICES) {
 		models.DEVICES = dev
 		logger.Log.Printf("Devices was updated")
-		fmt.Println("Devices was updated")
+		log.Println("Devices was updated")
 	}
 	return nil
 }

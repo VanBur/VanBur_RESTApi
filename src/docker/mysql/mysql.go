@@ -8,7 +8,7 @@ link to MySql Docker hub 	: https://hub.docker.com/_/mysql
 package mysql
 
 import (
-	"fmt"
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -33,6 +33,7 @@ const (
 
 // StartDockerDB is a method to start docker container with mysql database
 func StartDockerDB() error {
+	log.Println("Start Docker container")
 	var err error
 	runArgs := []string{
 		"run",
@@ -43,11 +44,13 @@ func StartDockerDB() error {
 		"-e", "MYSQL_ROOT_PASSWORD=" + DOCKER_DB_PASS,
 		"-e", "MYSQL_DATABASE=" + DOCKER_DB_NAME,
 		"--tmpfs", "/var/lib/mysql", DOCKER_CONT_BASE}
-	err = dockerCmdExec(runArgs...)
+	err = exec.Command("docker", runArgs...).Run()
 	if err != nil {
 		return err
 	}
-	loaderAnim(DOCKER_UPTIME)
+	log.Printf("Docker container is running. MySQL database need %d sec. Please wait.", DOCKER_UPTIME)
+	time.Sleep(DOCKER_UPTIME * time.Second)
+	log.Println("Docker container is ready.")
 	return nil
 }
 
@@ -68,32 +71,17 @@ func IsDockerRunning() (bool, error) {
 func StopIfDockerStillAlive() {
 	isRunning, _ := IsDockerRunning()
 	if isRunning {
-		fmt.Print(" Stop docker ...")
+		log.Println("Docker container still running, stopping docker.")
 		StopDockerDB()
-		fmt.Println(" Done.")
 	}
 }
 
 //StopDockerDB is a method to exec stop command to docker
 func StopDockerDB() {
 	stopArgs := []string{"stop", DOCKER_CONT_NAME}
-	_ = dockerCmdExec(stopArgs...)
-}
-
-// dockerCmdExec is a function to execute docker commands.
-// return error if something's going wrong.
-func dockerCmdExec(args ...string) error {
-	err := exec.Command("docker", args...).Run()
+	err := exec.Command("docker", stopArgs...).Run()
 	if err != nil {
-		return err
+		log.Println(err)
 	}
-	return nil
-}
-
-// processAnim is design method to let user know that database setup is in progress
-func loaderAnim(timer int) {
-	for i := 0; i < timer; i++ {
-		time.Sleep(1 * time.Second)
-		fmt.Print(".")
-	}
+	log.Println("Docker container stopped.")
 }
