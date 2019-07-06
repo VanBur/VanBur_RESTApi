@@ -2,7 +2,7 @@
 Test RESTApi application
 
 # Current version
-1.02
+1.03
 
 # REQUIREMENT
 - Go 1.9.2
@@ -25,16 +25,16 @@ go get ./...
 # Build
 To build executable file:
 ```
-go builg restapiserver.go
+go builg main.go
 ```
 # Usage 
 To launch application in demo-mode:
 ```
-./restapiserver -demo
+./main -demo
 ```
 To launch application in normal mode:
 ```
-./restapiserver -port=<SERVER_PORT> -db-host=<HOST> -db-port=<PORT> -db-name=<DATABASE_NAME> -db-user=<USERNAME> -db-pass=<PASSWORD>
+./main -port=<SERVER_PORT> -db-host=<HOST> -db-port=<PORT> -db-name=<DATABASE_NAME> -db-user=<USERNAME> -db-pass=<PASSWORD>
 ```
 Help output:
 ```
