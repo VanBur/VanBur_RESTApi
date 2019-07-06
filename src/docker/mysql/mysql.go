@@ -5,7 +5,7 @@ It simple and usefull! :)
 link to Docker 				: https://www.docker.com/
 link to MySql Docker hub 	: https://hub.docker.com/_/mysql
 */
-package utils
+package mysql
 
 import (
 	"fmt"
@@ -24,45 +24,47 @@ const (
 	DOCKER_DB_NAME = "testDB"
 
 	// Docker params
-	_DOCKER_CONT_NAME = "mysql-test-server"
-	_DOCKER_CONT_BASE = "mysql:5.7.26"
+	DOCKER_CONT_NAME = "mysql-test-server"
+	DOCKER_CONT_BASE = "mysql:5.7.26"
 
 	// Time for docker to setup mysql server (in seconds)
-	_DOCKER_UPTIME = 10
+	DOCKER_UPTIME = 10
 )
 
-//StartDockerDB is a method to start docker container with mysql database
+// StartDockerDB is a method to start docker container with mysql database
 func StartDockerDB() error {
 	var err error
-	err = IsEverythingInstalled("docker")
-	if err != nil {
-		return err
-	}
-
-	runArgs := []string{"run", "-d", "-p", strconv.Itoa(DOCKER_DB_PORT) + ":3306", "--name", _DOCKER_CONT_NAME,
-		"--rm", "-e", "MYSQL_ROOT_PASSWORD=" + DOCKER_DB_PASS, "-e", "MYSQL_DATABASE=" + DOCKER_DB_NAME,
-		"--tmpfs", "/var/lib/mysql", _DOCKER_CONT_BASE}
+	runArgs := []string{
+		"run",
+		"-d",
+		"-p", strconv.Itoa(DOCKER_DB_PORT) + ":3306",
+		"--name", DOCKER_CONT_NAME,
+		"--rm",
+		"-e", "MYSQL_ROOT_PASSWORD=" + DOCKER_DB_PASS,
+		"-e", "MYSQL_DATABASE=" + DOCKER_DB_NAME,
+		"--tmpfs", "/var/lib/mysql", DOCKER_CONT_BASE}
 	err = dockerCmdExec(runArgs...)
 	if err != nil {
 		return err
 	}
-	loaderAnim(_DOCKER_UPTIME)
+	loaderAnim(DOCKER_UPTIME)
 	return nil
 }
 
-//IsDockerRunning is a method to check - is docker alive or not
+// IsDockerRunning is a method to check - is docker alive or not
 func IsDockerRunning() (bool, error) {
-	out, err := exec.Command("docker", "ps", "-a", "--filter", "NAME="+_DOCKER_CONT_NAME).Output()
+	out, err := exec.Command("docker", "ps", "-a",
+		"--filter", "NAME="+DOCKER_CONT_NAME).Output()
 	if err != nil {
 		return true, err
 	}
-	if strings.Contains(string(out), _DOCKER_CONT_NAME) {
+	if strings.Contains(string(out), DOCKER_CONT_NAME) {
 		return true, nil
 	}
 	return false, nil
 }
 
-//StopIfDockerStillAlive is a method to stop docker container if it still running
+// StopIfDockerStillAlive is a method to stop docker container if it still running
 func StopIfDockerStillAlive() {
 	isRunning, _ := IsDockerRunning()
 	if isRunning {
@@ -74,7 +76,7 @@ func StopIfDockerStillAlive() {
 
 //StopDockerDB is a method to exec stop command to docker
 func StopDockerDB() {
-	stopArgs := []string{"stop", _DOCKER_CONT_NAME}
+	stopArgs := []string{"stop", DOCKER_CONT_NAME}
 	_ = dockerCmdExec(stopArgs...)
 }
 

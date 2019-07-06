@@ -8,14 +8,16 @@ link to MySql Docker hub 	: https://hub.docker.com/_/mysql
 package mysqlmodule
 
 import (
+	"database/sql"
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
 
 	"restapiserver/src/config"
+	"restapiserver/src/docker/mysql"
 	"restapiserver/src/models"
-	"restapiserver/src/utils"
 )
 
 // contentTestStruct is a structure for testing content operations
@@ -48,32 +50,36 @@ var testViewContentData = []viewContentTestStruct{
 	{models.ViewContent{1, "Huawei"}, ""},
 }
 
-func TestContent(t *testing.T) {
-	err := utils.StartDockerDB()
-	if err != nil {
-		panic(err)
-	}
-	defer utils.StopDockerDB()
+var db *sql.DB
 
-	var dbConf = DbConfig{
-		User:   utils.DOCKER_DB_USER,
-		Pass:   utils.DOCKER_DB_PASS,
-		Host:   utils.DOCKER_DB_HOST,
-		Port:   utils.DOCKER_DB_PORT,
-		DBName: utils.DOCKER_DB_NAME}
-	db, err := ConnectToDataBase(dbConf)
+func TestContent(t *testing.T) {
+	var err error
+	fmt.Print("Starting docker with database")
+	err = mysql.StartDockerDB()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("DB is online")
+	defer mysql.StopDockerDB()
+
+	dbConfig := DbConfig{
+		Host:   mysql.DOCKER_DB_HOST,
+		Port:   mysql.DOCKER_DB_PORT,
+		DBName: mysql.DOCKER_DB_NAME,
+		User:   mysql.DOCKER_DB_USER,
+		Pass:   mysql.DOCKER_DB_PASS,
+	}
+	db, err = ConnectToDataBase(dbConfig)
+	if err != nil {
+		panic(err)
+	}
 	defer db.Close()
 
-	err = LoadDump(db, config.DUMP_PATH)
+	dumpPath := filepath.Join("dumps", config.DUMP_CLEAR_DB_PATH)
+	err = LoadDump(db, dumpPath)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Dump was loaded")
-
+	fmt.Println("ok")
 	// Get protection systems
 	ps, _ := GetProtectionSystems(db)
 	if len(ps) != len(models.PROTECTION_SCHEMES) {
@@ -84,7 +90,6 @@ func TestContent(t *testing.T) {
 	}
 
 	// Get devices
-
 	devices, _ := GetDevices(db)
 	if len(devices) != len(models.DEVICES) {
 		t.Error(

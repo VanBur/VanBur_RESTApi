@@ -1,6 +1,8 @@
 package models
 
-import "testing"
+import (
+	"testing"
+)
 
 type contentTestStruct struct {
 	contentData   Content
@@ -49,7 +51,7 @@ var isValidContentDataTests = []contentTestStruct{
 var isValidContentViewDataTests = []viewContentTestStruct{
 	{ViewContent{1, "Samsung"}, true},
 	{ViewContent{2, ""}, false},
-	{ViewContent{3, "Huawei"}, false},
+	{ViewContent{3, "PinPonZun"}, false},
 	{ViewContent{0, "LG"}, false},
 }
 

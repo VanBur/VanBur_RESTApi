@@ -13,6 +13,7 @@ import (
 	"errors"
 	"io"
 	"os/exec"
+	"restapiserver/src/models"
 	"strings"
 )
 
@@ -66,4 +67,18 @@ func pipingExec(c1, c2 *exec.Cmd) (string, error) {
 	}
 
 	return strings.Replace(b2o.String(), "\n", "", 1), nil
+}
+
+//ConvertDatabaseEncTypeToAesModule is a function to get understandable format for openssl-aes-module.
+// return string with needed type of AES-encryption or error if openssl-aes-module cant working with this type
+// of encryption
+func ConvertDatabaseEncTypeToAesModule(inputType string) (string, error) {
+	switch inputType {
+	case models.AES_ECB:
+		return TYPE_128_ECB, nil
+	case models.AES_CBC:
+		return TYPE_128_CBC, nil
+	default:
+		return "", errors.New("Selected AES encryption type is unavalable")
+	}
 }

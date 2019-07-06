@@ -1,7 +1,7 @@
 /*
 	Errors to logs and user response
 */
-package utils
+package errors
 
 const (
 	INVALID_CONTENT_ID                             = "invalid content ID"

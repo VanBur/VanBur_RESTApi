@@ -1,8 +1,10 @@
-package utils
+package logger
 
 import (
 	"log"
 	"os"
+	"path/filepath"
+
 	"restapiserver/src/config"
 )
 
@@ -13,7 +15,9 @@ func init() {
 	if _, err := os.Stat(config.LOG_FOLDER); os.IsNotExist(err) {
 		os.Mkdir(config.LOG_FOLDER, os.ModePerm)
 	}
-	var f, err = os.Create(config.LOG_FOLDER + "/" + config.LOG_FILE_NAME)
+
+	logPath := filepath.Join(config.LOG_FOLDER, config.LOG_FILE_NAME)
+	var f, err = os.Create(logPath)
 	if err != nil {
 		panic(err)
 	}

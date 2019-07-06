@@ -14,7 +14,7 @@ import (
 	"restapiserver/src/models"
 )
 
-//DbConfig is a structure for easyest configuring database connection
+// DbConfig is a structure for easyest configuring database connection
 type DbConfig struct {
 	User   string
 	Pass   string
@@ -53,7 +53,7 @@ const (
 	_GET_DEVICES            = "SELECT * FROM devices"
 )
 
-//ConnectToDataBase is a function to connect application to database and make sure that db is connected by ping.
+// ConnectToDataBase is a function to connect application to database and make sure that db is connected by ping.
 // return pointer to database and error if something's going wrong.
 func ConnectToDataBase(cnf DbConfig) (*sql.DB, error) {
 	connSettings := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cnf.User, cnf.Pass, cnf.Host, cnf.Port, cnf.DBName)
@@ -72,7 +72,7 @@ func ConnectToDataBase(cnf DbConfig) (*sql.DB, error) {
 	return db, nil
 }
 
-//pingToDatabase is a function to ping database for checking connect
+// pingToDatabase is a function to ping database for checking connect
 // return error if ping was failed
 func pingToDatabase(db *sql.DB) error {
 	err := db.Ping()
@@ -82,7 +82,7 @@ func pingToDatabase(db *sql.DB) error {
 	return nil
 }
 
-//GetContent is a function to get list of all content from database
+// GetContent is a function to get list of all content from database
 // return pointer to slice of content and error if something's going wrong.
 func GetContent(db *sql.DB) ([]*models.Content, error) {
 	rows, err := db.Query(_GET_CONTENT_MYSQL)
@@ -106,7 +106,7 @@ func GetContent(db *sql.DB) ([]*models.Content, error) {
 	return result, nil
 }
 
-//GetDevices is a function to get list of all devices data from database.
+// GetDevices is a function to get list of all devices data from database.
 // Needs to validate cashed 'Devices' slice
 // return pointer to slice of structs and error if something's going wrong.
 func GetDevices(db *sql.DB) ([]models.Device, error) {
@@ -131,7 +131,7 @@ func GetDevices(db *sql.DB) ([]models.Device, error) {
 	return result, nil
 }
 
-//GetProtectionSystems is a function to get list of all protection systems data from database.
+// GetProtectionSystems is a function to get list of all protection systems data from database.
 // Needs to validate cashed 'Protection Systems' slice
 // return pointer to slice of structs and error if something's going wrong.
 func GetProtectionSystems(db *sql.DB) ([]models.ProtectionSystem, error) {
@@ -156,7 +156,7 @@ func GetProtectionSystems(db *sql.DB) ([]models.ProtectionSystem, error) {
 	return result, nil
 }
 
-//GetContentById is a function to get content data with selected id from database.
+// GetContentById is a function to get content data with selected id from database.
 // return pointer to selected content data and error if something's going wrong.
 func GetContentById(db *sql.DB, contentId int) (*models.Content, error) {
 	row := db.QueryRow(_GET_CONTENT_BY_ID_MYSQL, contentId)
@@ -168,7 +168,7 @@ func GetContentById(db *sql.DB, contentId int) (*models.Content, error) {
 	return content, nil
 }
 
-//AddContent is a function to add content data to database.
+// AddContent is a function to add content data to database.
 // return error if something's going wrong.
 func AddContent(db *sql.DB, params models.Content) error {
 	sql := _ADD_CONTENT_MYSQL
@@ -179,7 +179,7 @@ func AddContent(db *sql.DB, params models.Content) error {
 	return nil
 }
 
-//UpdateContent is a function to update content data with selected id in database.
+// UpdateContent is a function to update content data with selected id in database.
 // return error if something's going wrong.
 func UpdateContent(db *sql.DB, contentId int, params models.Content) error {
 	sql := generateUpdateSqlFromParams(contentId, params)
@@ -190,7 +190,7 @@ func UpdateContent(db *sql.DB, contentId int, params models.Content) error {
 	return nil
 }
 
-//DeleteContent is a function to delete content data with selected id from database.
+// DeleteContent is a function to delete content data with selected id from database.
 // return error if something's going wrong.
 func DeleteContent(db *sql.DB, contentId int) error {
 	sql := _DELETE_CONTENT_MYSQL
@@ -201,7 +201,7 @@ func DeleteContent(db *sql.DB, contentId int) error {
 	return nil
 }
 
-//GetEncryptedMedia is a function to get enrypted data with keys from database.
+// GetEncryptedMedia is a function to get enrypted data with keys from database.
 // return pointer to selected enrypted data and error if something's going wrong.
 func GetEncryptedMedia(db *sql.DB, params models.ViewContent) (*models.EnryptedMedia, error) {
 	row := db.QueryRow(_VIEW_CONTENT_MYSQL, params.ContentID, params.Device)
@@ -213,7 +213,7 @@ func GetEncryptedMedia(db *sql.DB, params models.ViewContent) (*models.EnryptedM
 	return data, nil
 }
 
-//LoadDump is a function for loading sql-dump to database
+// LoadDump is a function for loading sql-dump to database
 func LoadDump(db *sql.DB, dump string) error {
 	file, err := os.Open(dump)
 	if err != nil {
@@ -235,7 +235,7 @@ func LoadDump(db *sql.DB, dump string) error {
 	return nil
 }
 
-//generateUpdateSqlFromParams is a function to get part of update-command.
+// generateUpdateSqlFromParams is a function to get part of update-command.
 // return string with needed parameters.
 func generateUpdateSqlFromParams(contentId int, params models.Content) string {
 	paramSlice := make([]string, 0)
@@ -255,7 +255,7 @@ func generateUpdateSqlFromParams(contentId int, params models.Content) string {
 	return result
 }
 
-//prepareAndExec is a function for anti-duplication code
+// prepareAndExec is a function for anti-duplication code
 func prepareAndExec(db *sql.DB, sql string, execArgs ...interface{}) (sql.Result, error) {
 	prepForm, err := db.Prepare(sql)
 	if err != nil {

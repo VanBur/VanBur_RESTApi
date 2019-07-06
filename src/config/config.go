@@ -4,14 +4,14 @@
 package config
 
 //Version of application
-const VERSION = "1.02"
+const VERSION = "1.01"
 
 //Log file path
 const LOG_FOLDER = "logs"
 const LOG_FILE_NAME = "info.log"
 
 // MySql dump paths
-const DUMP_PATH = "testbd.sql"
+const DUMP_CLEAR_DB_PATH = "testbd.sql"
 const DUMP_WITH_CONTENT_PATH = "testbdwithcontent.sql"
 
 // Port for this application
@@ -26,17 +26,8 @@ const (
 	DB_NAME = "rakuten"
 )
 
-/*
-var DB_CONFIG = Utils.DbConfig{
-	"root",
-	"root",
-	"localhost",
-	8889,
-	"rakuten",
-}
-*/
-
 // Programms required to make this super application works
 var REQUIRED_UTILS = []string{
 	"openssl",
+	"docker",
 }
